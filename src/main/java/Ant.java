@@ -85,7 +85,6 @@ public abstract class Ant implements Callable<List<Integer>> {
      * Call method implementation of Callable interface
      * @return List<Integer> of the built path.
      */
-    @Override
     public List<Integer> call() {
         buildPath();
         return path;

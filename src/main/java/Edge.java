@@ -9,7 +9,9 @@ import java.util.HashSet;
 
 public class Edge extends HashSet<Integer> {
     Edge(Integer a, Integer b) {
-        super(a, b);
+        super(2);
+        this.add(a);
+        this.add(b);
     }
 
     @Override
@@ -19,7 +21,7 @@ public class Edge extends HashSet<Integer> {
 
     @Override
     public String toString() {
-        Integer[] nodes = (Integer[]) this.toArray();
+        Integer[] nodes = this.toArray(new Integer[this.size()]);
         Integer a = nodes[0];
         Integer b = nodes[1];
         return a < b ? "(" + Integer.toString(a) + ", " + Integer.toString(b) + ")" : "(" + Integer.toString(b) + ", " + Integer.toString(a) + ")";
@@ -27,19 +29,19 @@ public class Edge extends HashSet<Integer> {
 
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof Edge)) return false;
+        if (!(o instanceof Edge)) return false;
 
         Edge e = (Edge) o;
-        Integer[] nodes1 = (Integer[]) this.toArray();
+        Integer[] nodes1 = this.toArray(new Integer[this.size()]);
         Integer a1 = nodes1[0];
         Integer b1 = nodes1[1];
-        Integer[] nodes2 = (Integer[]) e.toArray();
+        Integer[] nodes2 = e.toArray(new Integer[this.size()]);
         Integer a2 = nodes2[0];
         Integer b2 = nodes2[1];
 
-        if(a1 == a2 && b1 == b2) return true;
+        if (a1 == a2 && b1 == b2) return true;
 
-        if(b1 == a2 && a1 == b2) return true;
+        if (b1 == a2 && a1 == b2) return true;
 
         return false;
     }
