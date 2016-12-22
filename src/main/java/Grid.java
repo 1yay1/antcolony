@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * Created by yay on 21.12.2016.
  */
 public class Grid {
-    private final ConcurrentHashMap<Edge, Pheromone> synchronizedEdgePheromoneMap;
+    private final ConcurrentHashMap<Edge, EdgeInfo> synchronizedEdgePheromoneMap;
     private final ConcurrentHashMap<Integer, Node> synchronizedIntegerNodeMap;
     private volatile boolean updated;
 
@@ -21,8 +21,12 @@ public class Grid {
         updated = false;
     }
 
-    public int size() {
+    public int nodeCount() {
         return synchronizedIntegerNodeMap.size();
+    }
+
+    public Set<Integer> getNodeKeySet() {
+        return  synchronizedIntegerNodeMap.keySet();
     }
 
     /**
@@ -76,27 +80,40 @@ public class Grid {
         return lines;
     }
 
-    public Pheromone getPheromone(Edge e) {
-        return synchronizedEdgePheromoneMap.get(e);
+    private EdgeInfo getEdgeInfo(Edge edge) {
+        return synchronizedEdgePheromoneMap.get(edge);
     }
 
+    private void addEdgeInfo(Edge edge, EdgeInfo edgeInfo) {
+        synchronizedEdgePheromoneMap.put(edge,edgeInfo);
+    }
+
+    protected EdgeInfo getOrCreateEdgeInfo(Edge e) {
+        EdgeInfo edgeInfo = this.getEdgeInfo(e);
+        if (edgeInfo == null) {
+            Integer[] edgeIntegers = e.getAsArray();
+            edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
+            this.addEdgeInfo(e, edgeInfo);
+        }
+        return edgeInfo;
+    }
     /**
      * Gets all edges that contain a node specified by id
      *
-     * @param i id of the node
+     * @param from id of the node
      * @return sorted List<Map<Edge,Pheromone> of all Edges with their Pheromone value containing the node with the given id
-     */
-    public List<Map<Edge, Pheromone>> getAllEdgesFromAsSortedList(Integer i) {
+     *//*
+    public List<Map<Edge, EdgeInfo>> getEdgeInfoFrom(Integer from) {
         return synchronizedEdgePheromoneMap.entrySet().stream()
-                .filter((m) -> m.getKey().contains(i))
-                .sorted((e1, e2) -> e1.getValue().getValue().compareTo(e2.getValue().getValue()))
+                .filter((m) -> m.getKey().contains(from))
+                .sorted((e1, e2) -> e1.getValue().getPheromone().getValue().compareTo(e2.getValue().getPheromone().getValue()))
                 .map((e) -> {
-                    Map<Edge, Pheromone> m = new HashMap<>();
+                    Map<Edge, EdgeInfo> m = new HashMap<>();
                     m.put(e.getKey(), e.getValue());
                     return m;
                 })
                 .collect(Collectors.toList());
-    }
+    }*/
 
     public Node getNode(Integer id) {
         return synchronizedIntegerNodeMap.get(id);

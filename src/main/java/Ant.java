@@ -1,7 +1,7 @@
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by yay on 20.12.2016.
@@ -49,11 +49,23 @@ public abstract class Ant implements Callable<List<Integer>> {
 
 
     /**
+     * retrieves a map of possible next edges and their mapped edgeinfo.
+     * @return
+     */
+    protected Map<Edge, EdgeInfo> getPossibleNextEdgeInfoMap() {
+        final Integer lastNode = path.get(path.size() - 1);
+        return g.getNodeKeySet().stream()
+                .filter((k) -> !path.contains(k))
+                .map((k) -> new Edge(k, path.get(lastNode)))
+                .collect(Collectors.toMap((e) -> e, g::getOrCreateEdgeInfo));
+    }
+
+    /**
      * Building the path. Reacts to changes to the grid.
      * If there are changes to the grid, it resets the currently built path.
      */
     protected void buildPath() {
-        while (path.size() < g.size()) {
+        while (path.size() < g.nodeCount()) {
             if (!reset) {
                 hasReceivedUpdate = false;
                 path.add(chooseNextNode());
@@ -66,14 +78,16 @@ public abstract class Ant implements Callable<List<Integer>> {
 
     /**
      * Sets the volatile reset flag
+     *
      * @return value of reset
      */
-    public void reset(){
+    public void reset() {
         reset = true;
     }
 
     /**
      * Checks the value of hasReceivedUpdate
+     *
      * @return hasReceivedUpdate
      */
     public boolean hasReceivedUpdate() {
@@ -83,6 +97,7 @@ public abstract class Ant implements Callable<List<Integer>> {
 
     /**
      * Call method implementation of Callable interface
+     *
      * @return List<Integer> of the built path.
      */
     public List<Integer> call() {

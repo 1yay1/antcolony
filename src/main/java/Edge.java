@@ -8,10 +8,15 @@ import java.util.HashSet;
  */
 
 public class Edge extends HashSet<Integer> {
+
     Edge(Integer a, Integer b) {
         super(2);
         this.add(a);
         this.add(b);
+    }
+
+    public Integer[] getAsArray() {
+        return this.toArray(new Integer[this.size()]);
     }
 
     @Override
