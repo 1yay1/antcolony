@@ -90,17 +90,19 @@ public class Grid {
 
     protected EdgeInfo getOrCreateEdgeInfo(Edge e) {
         EdgeInfo edgeInfo = this.getEdgeInfo(e);
-        if (edgeInfo == null) {
-            Integer[] edgeIntegers = e.getAsArray();
-            edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
-            this.addEdgeInfo(e, edgeInfo);
+        synchronized (this) {
+            if (edgeInfo == null) {
+                Integer[] edgeIntegers = e.getAsArray();
+                edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
+                this.addEdgeInfo(e, edgeInfo);
+            }
         }
         return edgeInfo;
     }
     /**
      * Gets all edges that contain a node specified by id
      *
-     * @param from id of the node
+     * @param id of the node
      * @return sorted List<Map<Edge,Pheromone> of all Edges with their Pheromone value containing the node with the given id
      *//*
     public List<Map<Edge, EdgeInfo>> getEdgeInfoFrom(Integer from) {
@@ -137,32 +139,4 @@ public class Grid {
             while (!a.hasReceivedUpdate()) ;
         }
     }
-
-    /**
-     * removes a node, same blocknig as addNode method
-     * also has to remove all edges already added to the edge map containing the node to be removed
-     *
-     * @param id
-     * @param ants
-     */
-    public void removeNode(Integer id, Collection<Ant> ants) {
-        synchronized (this) {
-            synchronizedIntegerNodeMap.remove(id);
-            for (Edge e : synchronizedEdgePheromoneMap.keySet()) {
-                for (Integer i : e) {
-                    if (i == id) {
-                        synchronizedEdgePheromoneMap.remove(e);
-                        break;
-                    }
-                }
-            }
-        }
-        for (Ant a : ants) {
-            a.reset();
-        }
-        for (Ant a : ants) {
-            while (!a.hasReceivedUpdate()) ;
-        }
-    }
-
 }
