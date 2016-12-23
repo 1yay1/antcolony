@@ -6,6 +6,5 @@
 public class AntColony {
     public static void main(String[] args) {
         System.out.print("THERE ARE ANTS IN MY PANTS!");
-
     }
 }
