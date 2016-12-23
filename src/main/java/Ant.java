@@ -110,6 +110,7 @@ public abstract class Ant implements Runnable {
                     }
                 }
                 pause = false;
+                bestPath = null;
                 init();
             }
             while (path.size() < g.nodeCount()) {
@@ -117,10 +118,13 @@ public abstract class Ant implements Runnable {
             }
             producePheromone();
 
-            //todo:
-            //check for best path.
-            bestPath = path;
 
+            if(bestPath == null) {
+                bestPath = path;
+            } else {
+                //todo:
+                //check for best path.
+            }
             init();
         }
         path = bestPath;
