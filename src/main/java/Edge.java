@@ -13,6 +13,7 @@ public class Edge extends HashSet<Integer> {
         super(2);
         this.add(a);
         this.add(b);
+
     }
 
     public Integer[] getAsArray() {

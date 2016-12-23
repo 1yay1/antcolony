@@ -11,14 +11,17 @@ import java.util.stream.Collectors;
 public class Grid {
     private final ConcurrentHashMap<Edge, EdgeInfo> synchronizedEdgePheromoneMap;
     private final ConcurrentHashMap<Integer, Node> synchronizedIntegerNodeMap;
-    private volatile boolean updated;
+    private volatile boolean updating;
 
 
     public Grid(File f) {
-        Map m = loadFile(f);
-        synchronizedIntegerNodeMap = new ConcurrentHashMap();
+        this(loadFile(f));
+    }
+
+    public Grid(Map<Integer, Node> map) {
+        synchronizedIntegerNodeMap = new ConcurrentHashMap(map);
         synchronizedEdgePheromoneMap = new ConcurrentHashMap();
-        updated = false;
+        updating = false;
     }
 
     public int nodeCount() {
@@ -26,7 +29,11 @@ public class Grid {
     }
 
     public Set<Integer> getNodeKeySet() {
-        return  synchronizedIntegerNodeMap.keySet();
+        return synchronizedIntegerNodeMap.keySet();
+    }
+
+    public Set<Edge> getEdgeKeySet() {
+        return synchronizedEdgePheromoneMap.keySet();
     }
 
     /**
@@ -35,7 +42,7 @@ public class Grid {
      * @param f File object to be read
      * @return Map of the read Nodes
      */
-    private Map<Integer, Node> loadFile(File f) {
+    private static Map<Integer, Node> loadFile(File f) {
         Map<Integer, Node> map = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             int y = countLines(f) - 1;
@@ -85,7 +92,7 @@ public class Grid {
     }
 
     private void addEdgeInfo(Edge edge, EdgeInfo edgeInfo) {
-        synchronizedEdgePheromoneMap.put(edge,edgeInfo);
+        synchronizedEdgePheromoneMap.put(edge, edgeInfo);
     }
 
     protected EdgeInfo getOrCreateEdgeInfo(Edge e) {
@@ -99,6 +106,7 @@ public class Grid {
         }
         return edgeInfo;
     }
+
     /**
      * Gets all edges that contain a node specified by id
      *
@@ -116,7 +124,6 @@ public class Grid {
                 })
                 .collect(Collectors.toList());
     }*/
-
     public Node getNode(Integer id) {
         return synchronizedIntegerNodeMap.get(id);
     }
@@ -129,14 +136,61 @@ public class Grid {
      * @param ants
      */
     public void addNode(Node n, Collection<Ant> ants) {
+        System.out.print("UPDATING..");
+        updating = true;
+        for (Ant a : ants) {
+            while(!a.isPaused()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        synchronizedIntegerNodeMap.put(n.getId(), n);
+        updating = false;
+        System.out.print("UPDATED!..");
+    }
+
+    /**
+     * removes a node, same blocknig as addNode method
+     * also has to remove all edges already added to the edge map containing the node to be removed
+     *
+     * @param id
+     * @param ants
+     */
+    public void removeNode(Integer id, Collection<Ant> ants) {
+        System.out.print("UPDATING..");
+        updating = true;
+        for (Ant a : ants) {
+            while(!a.isPaused()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         synchronized (this) {
-            synchronizedIntegerNodeMap.put(n.getId(), n);
+            synchronizedIntegerNodeMap.remove(id);
+            for (Edge e : synchronizedEdgePheromoneMap.keySet()) {
+                for (Integer i : e) {
+                    if (i == id) {
+                        synchronizedEdgePheromoneMap.remove(e);
+                        break;
+                    }
+                }
+            }
         }
         for (Ant a : ants) {
-            a.reset();
+            a.resume();
         }
-        for (Ant a : ants) {
-            while (!a.hasReceivedUpdate()) ;
-        }
+        updating = false;
+        System.out.print("UPDATED!..");
+    }
+
+
+    public boolean isUpdating() {
+        return updating;
     }
 }

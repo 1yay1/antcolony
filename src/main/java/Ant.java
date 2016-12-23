@@ -12,6 +12,7 @@ public abstract class Ant implements Runnable {
     private volatile boolean reset;
     private volatile boolean hasReceivedUpdate;
     private volatile boolean running;
+    private volatile boolean pause;
     private BlockingQueue<List<Integer>> blockingQueue;
     private final int tourNumber;
 
@@ -36,15 +37,17 @@ public abstract class Ant implements Runnable {
         this.path.add(0);
         reset = false;
         hasReceivedUpdate = false;
+        pause = false;
     }
 
     private Map<Edge, EdgeInfo> getPathInfo() {
         Set<Edge> edges = new HashSet<>();
-        for(int i = 0; i < path.size() - 1; i++) {
-            edges.add(new Edge(path.get(i), path.get(i+1)));
+        System.out.println(Arrays.toString(path.toArray()));
+        for (int i = 0; i < path.size() - 1; i++) {
+            edges.add(new Edge(path.get(i), path.get(i + 1)));
         }
         Map<Edge, EdgeInfo> edgeEdgeInfoMap = new HashMap<>();
-        for(Edge e: edges) {
+        for (Edge e : edges) {
             edgeEdgeInfoMap.put(e, g.getOrCreateEdgeInfo(e));
         }
         return edgeEdgeInfoMap;
@@ -78,30 +81,46 @@ public abstract class Ant implements Runnable {
                 .collect(Collectors.toMap((e) -> e, g::getOrCreateEdgeInfo));
     }
 
+    public void pause() {
+        pause = true;
+    }
+
+    public void resume() {
+        pause = false;
+    }
+
+    public boolean isPaused() {
+        return pause;
+    }
+
     /**
      * Building the path. Reacts to changes to the grid.
      * If there are changes to the grid, it resets the currently built path.
      */
     protected void buildPath() {
         List<Integer> bestPath = null;
-        for(int i = 0; i < tourNumber; i++) {
-            while (path.size() < g.nodeCount()) {
-                if (!reset) {
-                    hasReceivedUpdate = false;
-                    path.add(chooseNextNode());
-                } else {
-                    init();
-                    hasReceivedUpdate = true;
+        for (int i = 0; i < tourNumber; i++) {
+            if (g.isUpdating()) {
+                pause = true;
+                while (g.isUpdating()) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
+                pause = false;
+                init();
+            }
+            while (path.size() < g.nodeCount()) {
+                path.add(chooseNextNode());
             }
             producePheromone();
-            if(bestPath == null) {
-                bestPath = path;
-            } else {
-                if(calculateDistanceFromPath(bestPath) > calculateDistanceFromPath(path)) {
-                    bestPath = path;
-                }
-            }
+
+            //todo:
+            //check for best path.
+            bestPath = path;
+
             init();
         }
         path = bestPath;
@@ -142,7 +161,7 @@ public abstract class Ant implements Runnable {
     @Override
     public void run() {
         running = true;
-        while(running) {
+        while (running) {
             buildPath();
             boolean success = blockingQueue.offer(path);
             while (!success) {
