@@ -27,6 +27,7 @@ public class FXAntNode extends Circle {
         this.setStyle(STYLE_UNCLICKED);
         this.isClicked = false;
         this.antNodeId = antNodeId;
+        //
     }
 
     public int getAntNodeId() {
