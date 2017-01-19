@@ -36,5 +36,12 @@ public class Pheromone {
     public Float getValue() {
         return new Float(value);
     }
+    /**
+     * Default setter for the pheromone value
+     */ 
+    public void setValue(Float value) {
+        this.value=value;
+    }
+
 
 }

@@ -15,7 +15,7 @@ public abstract class Ant implements Runnable {
     private volatile boolean pause;
     private BlockingQueue<List<Integer>> blockingQueue;
     private final int tourNumber;
-
+private double bestDistance; 
     public List<Integer> getPath() {
         return path;
     }
@@ -40,7 +40,7 @@ public abstract class Ant implements Runnable {
         pause = false;
     }
 
-    private Map<Edge, EdgeInfo> getPathInfo() {
+    protected Map<Edge, EdgeInfo> getPathInfo() {
         Set<Edge> edges = new HashSet<>();
         System.out.println(Arrays.toString(path.toArray()));
         for (int i = 0; i < path.size() - 1; i++) {
@@ -58,10 +58,10 @@ public abstract class Ant implements Runnable {
      * Adds pheromone to the edgePheromoneMap in Grid g
      * Should be called for each edge traveled after building the path.
      */
-    protected abstract void producePheromone();
+    protected abstract void producePheromone(Boolean isGlobal);
 
     /**
-     * Chooeses the next node to travel.
+     * Chooses the next node to travel.
      * Should account for already added nodes the the path, since we don't want to visit a node twice.
      *
      * @return Integer id of the node to be traveled next.
@@ -82,6 +82,10 @@ public abstract class Ant implements Runnable {
                 .collect(Collectors.toMap((e) -> e, g::getOrCreateEdgeInfo));
     }
 
+    protected double getBestDistance() 
+    {
+    	return this.bestDistance;
+    }
     public void pause() {
         pause = true;
     }
@@ -100,6 +104,7 @@ public abstract class Ant implements Runnable {
      */
     protected void buildPath() {
         List<Integer> bestPath = null;
+        this.bestDistance=Double.MAX_VALUE;
         for (int i = 0; i < tourNumber; i++) {
             if (g.isUpdating()) {
                 pause = true;
@@ -112,27 +117,34 @@ public abstract class Ant implements Runnable {
                 }
                 pause = false;
                 bestPath = null;
+                this.bestDistance=Double.MAX_VALUE;
                 init();
             }
             while (path.size() < g.nodeCount()) {
                 path.add(chooseNextNode());
             }
-            producePheromone();
+            producePheromone(false);
 
 
             if(bestPath == null) {
                 bestPath = path;
             } else {
-                //todo:
-                //check for best path.
+            	Double tmp_distance=calculateDistanceFromPath(this.getPath());
+            	if(this.bestDistance>tmp_distance)
+            {
+            this.bestDistance=tmp_distance;
+            bestPath=this.path;
             }
+            }
+                //
             init();
         }
         path = bestPath;
-        producePheromone();
+        this.bestDistance=calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
+                producePheromone(true);
     }
 
-    private Double calculateDistanceFromPath(List<Integer> bestPath) {
+    protected Double calculateDistanceFromPath(List<Integer> bestPath) {
         Map<Edge, EdgeInfo> map = getPathInfo();
         return map.values().stream()
                 .mapToDouble((v) -> v.getDistance())

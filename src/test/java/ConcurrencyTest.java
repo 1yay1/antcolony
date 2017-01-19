@@ -24,7 +24,7 @@ public class ConcurrencyTest {
 
         Ant a = new Ant(g, pathQueue, 2) {
             @Override
-            protected void producePheromone() {
+            protected void producePheromone(Boolean isGlobal) {
                 Edge edge = g.getEdgeKeySet().iterator().next();
                 EdgeInfo edgeInfo = g.getOrCreateEdgeInfo(edge);
                 edgeInfo.getPheromone().add(5f);
