@@ -16,6 +16,7 @@ public class Pheromone {
      * @param pheromoneValue value to be added
      */
     public void add(float pheromoneValue) {
+        //decay(0.1f);
         this.value += pheromoneValue;
     }
 
