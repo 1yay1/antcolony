@@ -33,7 +33,7 @@ public abstract class Ant implements Runnable {
      * If there is a change to the grid, while we are currently producing a new path, we need to abort and initialize again.
      */
     private void init() {
-        this.path = new ArrayList<Integer>();
+        this.path = new ArrayList<>();
         this.path.add(0);
         reset = false;
         hasReceivedUpdate = false;
@@ -46,6 +46,7 @@ public abstract class Ant implements Runnable {
         for (int i = 0; i < path.size() - 1; i++) {
             edges.add(new Edge(path.get(i), path.get(i + 1)));
         }
+        edges.add(new Edge(path.get(0), path.get(path.size() - 1)));
         Map<Edge, EdgeInfo> edgeEdgeInfoMap = new HashMap<>();
         for (Edge e : edges) {
             edgeEdgeInfoMap.put(e, g.getOrCreateEdgeInfo(e));

@@ -11,8 +11,8 @@ public class EdgeInfo {
         this.distance = distance;
     }
 
-    public EdgeInfo(Node n1, Node n2) {
-        this(Node.calculateDistance(n1, n2));
+    public EdgeInfo(AntNode n1, AntNode n2) {
+        this(AntNode.calculateDistance(n1, n2));
     }
 
     public Pheromone getPheromone() {

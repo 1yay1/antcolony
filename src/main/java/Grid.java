@@ -1,16 +1,13 @@
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * Created by yay on 21.12.2016.
  */
 public class Grid {
     private final ConcurrentHashMap<Edge, EdgeInfo> synchronizedEdgePheromoneMap;
-    private final ConcurrentHashMap<Integer, Node> synchronizedIntegerNodeMap;
+    private final ConcurrentHashMap<Integer, AntNode> synchronizedIntegerNodeMap;
     private volatile boolean updating;
 
 
@@ -18,7 +15,7 @@ public class Grid {
         this(loadFile(f));
     }
 
-    public Grid(Map<Integer, Node> map) {
+    public Grid(Map<Integer, AntNode> map) {
         synchronizedIntegerNodeMap = new ConcurrentHashMap(map);
         synchronizedEdgePheromoneMap = new ConcurrentHashMap();
         updating = false;
@@ -42,8 +39,8 @@ public class Grid {
      * @param f File object to be read
      * @return Map of the read Nodes
      */
-    private static Map<Integer, Node> loadFile(File f) {
-        Map<Integer, Node> map = new HashMap<>();
+    private static Map<Integer, AntNode> loadFile(File f) {
+        Map<Integer, AntNode> map = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             int y = countLines(f) - 1;
             String line = br.readLine();
@@ -52,7 +49,7 @@ public class Grid {
                 for (int x = 0; x < splitLine.length; x++) {
                     if (!splitLine[x].equals("00") && !splitLine[x].equals("0")) {
                         Integer id = Integer.parseInt(splitLine[x]);
-                        Node n = new Node(x, y);
+                        AntNode n = new AntNode(x, y);
                         map.put(id, n);
                     }
                 }
@@ -124,7 +121,7 @@ public class Grid {
                 })
                 .collect(Collectors.toList());
     }*/
-    public Node getNode(Integer id) {
+    public AntNode getNode(Integer id) {
         return synchronizedIntegerNodeMap.get(id);
     }
 
@@ -135,7 +132,7 @@ public class Grid {
      * @param n
      * @param ants
      */
-    public void addNode(Node n, Collection<Ant> ants) {
+    public void addNode(AntNode n, Collection<Ant> ants) {
         System.out.print("UPDATING..");
         updating = true;
         for (Ant a : ants) {

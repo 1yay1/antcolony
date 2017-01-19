@@ -9,15 +9,15 @@ import java.util.concurrent.*;
 public class ConcurrencyTest {
     @Test
     public void testConcurrency() {
-        Map<Integer, Node> map = new HashMap<>();
-        Node[] nodes = new Node[]{
-                new Node(1,1),
-                new Node(2,2),
-                new Node(3,3),
-                new Node(3,6)
+        Map<Integer, AntNode> map = new HashMap<>();
+        AntNode[] antNodes = new AntNode[]{
+                new AntNode(1,1),
+                new AntNode(2,2),
+                new AntNode(3,3),
+                new AntNode(3,6)
         };
-        for(int i = 0; i < nodes.length; i++) {
-            map.put(i, nodes[i]);
+        for(int i = 0; i < antNodes.length; i++) {
+            map.put(i, antNodes[i]);
         }
         Grid g = new Grid(map);
         ArrayBlockingQueue pathQueue = new ArrayBlockingQueue(100000);
