@@ -57,7 +57,7 @@ public abstract class Ant implements Runnable {
      * Adds pheromone to the edgePheromoneMap in Grid g
      * Should be called for each edge traveled after building the path.
      */
-    protected abstract void producePheromone();
+    protected abstract void producePheromone(boolean isGlobal, double thaunull);
 
     /**
      * Chooeses the next node to travel.
@@ -65,7 +65,7 @@ public abstract class Ant implements Runnable {
      *
      * @return Integer id of the node to be traveled next.
      */
-    protected abstract Integer chooseNextNode();
+    protected abstract Integer chooseNextNode(double q0,double beta);
 
 
     /**
@@ -116,7 +116,7 @@ public abstract class Ant implements Runnable {
             while (path.size() < g.nodeCount()) {
                 path.add(chooseNextNode());
             }
-            producePheromone();
+            producePheromone(false);
 
 
             if(bestPath == null) {
@@ -128,7 +128,7 @@ public abstract class Ant implements Runnable {
             init();
         }
         path = bestPath;
-        producePheromone();
+        producePheromone(true);
     }
 
     private Double calculateDistanceFromPath(List<Integer> bestPath) {
