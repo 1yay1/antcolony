@@ -186,6 +186,16 @@ public class Grid {
         System.out.print("UPDATED!..");
     }
 
+    public String getNodesAsString() {
+        StringBuilder sb = new StringBuilder();
+        this.synchronizedIntegerNodeMap.forEach((v,k) -> {
+            sb.append(v.toString());
+            sb.append((" : "));
+            sb.append(k.toString());
+            sb.append("\n");
+        });
+        return sb.toString();
+    }
 
     public boolean isUpdating() {
         return updating;

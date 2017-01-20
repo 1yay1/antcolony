@@ -1,9 +1,7 @@
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -33,22 +31,44 @@ public class SalesmanAnt extends Ant {
         for (Edge key : path_segments.keySet()) {
             double new_pheromone;
             if (isGlobal == true)
-                new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromone().getValue() + this.alpha * (1 / path_total_distance);
+                new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * (1 / path_total_distance);
             else
-                new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromone().getValue() + this.alpha * this.t0;
-            path_segments.get(key).getPheromone().setValue((float) new_pheromone);
+                new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * this.t0;
+            path_segments.get(key).setPheromone(new_pheromone);
         }
 
     }
 
+    /*
+    todo:
+        remove weightededge class, distance and pheromone is saved in edgeinfo fix roulette select.
+           // Returns the selected index based on the weights(probabilities)
+            int rouletteSelect(double[] weight) {
+                // calculate the total weight
+                double weight_sum = 0;
+                for(int i=0; i<weight.length; i++) {
+                    weight_sum += weight[i];
+                }
+                // get a random value
+                double value = randUniformPositive() * weight_sum;
+                // locate the random value based on the weights
+                for(int i=0; i<weight.length; i++) {
+                    value -= weight[i];
+                    if(value <= 0) return i;
+                }
+                // when rounding errors occur, we return the last item's index
+                return weight.length - 1;
+            }
+     */
     @Override
     protected Integer chooseNextNode() {
+        Integer previous = getPath().get(getPath().size()-1);
         Map<Edge, EdgeInfo> possibleEdges = getPossibleNextEdgeInfoMap();
         double random = ThreadLocalRandom.current().nextDouble(1);
         Map<Edge, Double> weightedPathValue = new HashMap<>();
         for (Map.Entry<Edge, EdgeInfo> entry : possibleEdges.entrySet()) {
             double distance = entry.getValue().getDistance();
-            double pheromone = entry.getValue().getPheromone().getValue();
+            double pheromone = entry.getValue().getPheromoneValue();
             weightedPathValue.put(entry.getKey(), Math.pow((1 / distance), beta) * pheromone);
         }
         if (random < this.q0) {
@@ -62,19 +82,41 @@ public class SalesmanAnt extends Ant {
         for (Edge e : weightedPathValue.keySet()) {
             sumValues += weightedPathValue.get(e);
         }
-        List<WeightedEdge> normalizedPathValue = new ArrayList<>();
-        for (Edge e : weightedPathValue.keySet()) {
-            normalizedPathValue.add(new WeightedEdge((Integer) e.toArray()[0], (Integer) e.toArray()[1], sumValues));
+        //List<WeightedEdge> normalizedPathValue;
+        sumValues = sumValues * ThreadLocalRandom.current().nextDouble();
+        ArrayList<Edge> edges = new ArrayList(weightedPathValue.keySet());
+        for (Edge e : edges) {
+            //normalizedPathValue.add(new WeightedEdge((Integer) e.toArray()[0], (Integer) e.toArray()[1], sumValues));
             sumValues -= weightedPathValue.get(e);
+            if (sumValues < 0) {
+                Object[] arr = e.toArray();
+                Integer first = (Integer) arr[0];
+                Integer second = (Integer) arr[1];
+                if (first.equals(previous)) {
+                    return second;
+                } else {
+                    return first;
+                }
+            }
         }
-        double randomselectPath = ThreadLocalRandom.current().nextDouble(sumValues);
+        Edge e = edges.get(edges.size()-1);
+        Object[] arr = e.toArray();
+        Integer first = (Integer) arr[0];
+        Integer second = (Integer) arr[1];
+        if (first.equals(previous)) {
+            return second;
+        } else {
+            return first;
+        }
+
+        /*double randomselectPath = ThreadLocalRandom.current().nextDouble(sumValues);
         for (WeightedEdge we : normalizedPathValue) {
             if (we.weightedWay < randomselectPath) {
                 return (getPath().get(getPath().size() - 1).equals(we.getAsArray()[0]))
                         ? we.getAsArray()[1] : we.getAsArray()[0];
             }
         }
-        return null;
+        return null;*/
     }
 
 

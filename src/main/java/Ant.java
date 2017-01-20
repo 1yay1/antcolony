@@ -15,7 +15,8 @@ public abstract class Ant implements Runnable {
     private volatile boolean pause;
     private BlockingQueue<List<Integer>> blockingQueue;
     private final int tourNumber;
-private double bestDistance; 
+    private double bestDistance;
+
     public List<Integer> getPath() {
         return path;
     }
@@ -34,7 +35,7 @@ private double bestDistance;
      */
     private void init() {
         this.path = new ArrayList<>();
-        this.path.add(0);
+        this.path.add(1);
         reset = false;
         hasReceivedUpdate = false;
         pause = false;
@@ -75,17 +76,18 @@ private double bestDistance;
      * @return
      */
     protected Map<Edge, EdgeInfo> getPossibleNextEdgeInfoMap() {
-        final Integer lastNode = path.get(path.size() - 1);
+        //final Integer lastNode = path.get(path.size() - 1);
+
         return g.getNodeKeySet().stream()
                 .filter((k) -> !path.contains(k))
-                .map((k) -> new Edge(k, path.get(lastNode)))
+                .map((k) -> new Edge(k, path.get(path.size()-1)))
                 .collect(Collectors.toMap((e) -> e, g::getOrCreateEdgeInfo));
     }
 
-    protected double getBestDistance() 
-    {
-    	return this.bestDistance;
+    protected double getBestDistance() {
+        return this.bestDistance;
     }
+
     public void pause() {
         pause = true;
     }
@@ -104,7 +106,7 @@ private double bestDistance;
      */
     protected void buildPath() {
         List<Integer> bestPath = null;
-        this.bestDistance=Double.MAX_VALUE;
+        this.bestDistance = Double.MAX_VALUE;
         for (int i = 0; i < tourNumber; i++) {
             if (g.isUpdating()) {
                 pause = true;
@@ -117,7 +119,7 @@ private double bestDistance;
                 }
                 pause = false;
                 bestPath = null;
-                this.bestDistance=Double.MAX_VALUE;
+                this.bestDistance = Double.MAX_VALUE;
                 init();
             }
             while (path.size() < g.nodeCount()) {
@@ -126,22 +128,21 @@ private double bestDistance;
             producePheromone(false);
 
 
-            if(bestPath == null) {
+            if (bestPath == null) {
                 bestPath = path;
             } else {
-            	Double tmp_distance=calculateDistanceFromPath(this.getPath());
-            	if(this.bestDistance>tmp_distance)
-            {
-            this.bestDistance=tmp_distance;
-            bestPath=this.path;
+                Double tmp_distance = calculateDistanceFromPath(this.getPath());
+                if (this.bestDistance > tmp_distance) {
+                    this.bestDistance = tmp_distance;
+                    bestPath = this.path;
+                }
             }
-            }
-                //
+            //
             init();
         }
         path = bestPath;
-        this.bestDistance=calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
-                producePheromone(true);
+        this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
+        producePheromone(true);
     }
 
     protected Double calculateDistanceFromPath(List<Integer> bestPath) {

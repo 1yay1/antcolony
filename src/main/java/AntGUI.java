@@ -6,12 +6,14 @@ import javafx.scene.control.Label;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.Path;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by yay on 23.12.2016.
@@ -20,6 +22,8 @@ public class AntGUI extends Application {
 
     @Override
     public void start(Stage stage) {
+        BlockingQueue arrayBlockingQueue = new ArrayBlockingQueue(1000);
+
         BorderPane mainRoot = new BorderPane();
         Pane root = new Pane();
         Label label = new Label();
@@ -45,7 +49,16 @@ public class AntGUI extends Application {
                     }
                 }));
                 g.addNode(antNode, ants);
+
+                Set<Line> temp = new HashSet();
+                for(Node n1: root.getChildren()) {
+                    if(n1 instanceof FXAntNode) {
+                        Line l = new Line(fxAntNode.getCenterX(), fxAntNode.getCenterY(), ((FXAntNode) n1).getCenterX(), ((FXAntNode) n1).getCenterY());
+                        temp.add(l);
+                    }
+                }
                 root.getChildren().add(fxAntNode);
+                root.getChildren().addAll(temp);
                 label.setText("Total City: " + 4);
             }
         });

@@ -4,10 +4,10 @@
  * Created by yay on 20.12.2016.
  */
 public class Pheromone {
-    private float value;
+    private double value;
 
     public Pheromone() {
-        this.value = 0f;
+        this.value = 0d;
     }
 
     /**
@@ -15,7 +15,7 @@ public class Pheromone {
      *
      * @param pheromoneValue value to be added
      */
-    public void add(float pheromoneValue) {
+    public void add(double pheromoneValue) {
         //decay(0.1f);
         this.value += pheromoneValue;
     }
@@ -25,7 +25,7 @@ public class Pheromone {
      *
      * @param decayRate rate of decay
      */
-    public void decay(float decayRate) {
+    public void decay(double decayRate) {
         this.value *= decayRate;
     }
 
@@ -34,13 +34,13 @@ public class Pheromone {
      *
      * @return this.value
      */
-    public Float getValue() {
-        return new Float(value);
+    public double getValue() {
+        return value;
     }
     /**
      * Default setter for the pheromone value
      */ 
-    public void setValue(Float value) {
+    public void setValue(Double value) {
         this.value=value;
     }
 

@@ -27,7 +27,7 @@ public class ConcurrencyTest {
             protected void producePheromone(Boolean isGlobal) {
                 Edge edge = g.getEdgeKeySet().iterator().next();
                 EdgeInfo edgeInfo = g.getOrCreateEdgeInfo(edge);
-                edgeInfo.getPheromone().add(5f);
+                edgeInfo.setPheromone(5d);
                 //System.out.print(edge.toString() + " " + edgeInfo.getDistance());
                 try {
                     Thread.sleep(1000);
@@ -51,20 +51,18 @@ public class ConcurrencyTest {
             }
         };
 
+
         Thread t = new Thread(a);
         t.start();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(200);
-                    List<Ant> ants = new ArrayList<>();
-                    ants.add(a);
-                    //g.removeNode(1,ants);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                Thread.sleep(200);
+                List<Ant> ants = new ArrayList<>();
+                ants.add(a);
+                //g.removeNode(1,ants);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }).start();
 
