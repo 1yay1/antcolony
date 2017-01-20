@@ -1,9 +1,12 @@
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 /**
  * Created by yay on 21.12.2016.
@@ -64,6 +67,10 @@ public class SalesmanAnt extends Ant {
     protected Integer chooseNextNode() {
         Integer previous = getPath().get(getPath().size()-1);
         Map<Edge, EdgeInfo> possibleEdges = getPossibleNextEdgeInfoMap();
+        List<Edge> edgesSortedByWeightList = possibleEdges.keySet().stream()
+                .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)))
+                .collect(Collectors.toList());
+        
         double random = ThreadLocalRandom.current().nextDouble(1);
         Map<Edge, Double> weightedPathValue = new HashMap<>();
         for (Map.Entry<Edge, EdgeInfo> entry : possibleEdges.entrySet()) {

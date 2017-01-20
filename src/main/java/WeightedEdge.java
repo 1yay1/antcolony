@@ -8,6 +8,7 @@
  *
  * @author Benutzer01
  */
+@Deprecated
 public class WeightedEdge extends Edge implements Comparable<WeightedEdge>{
     Double weightedWay;
     public WeightedEdge(Integer a, Integer b, Double weightedWay) {

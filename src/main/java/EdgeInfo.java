@@ -3,7 +3,7 @@ import java.util.Comparator;
 /**
  * Created by yay on 22.12.2016.
  */
-public class EdgeInfo implements Comparator<EdgeInfo> {
+public class EdgeInfo implements Comparable<EdgeInfo> {
     private Pheromone pheromone;
     private double distance;
     private double weightedValue;
@@ -40,10 +40,7 @@ public class EdgeInfo implements Comparator<EdgeInfo> {
 
 
     @Override
-    public int compare(EdgeInfo o1, EdgeInfo o2) {
-        Double v1 = o1.getWeightedValue();
-        Double v2 = o2.getWeightedValue();
-        return v1.compareTo(v2);
-        //return o1.getWeightedValue() > o2.getWeightedValue() ? return o1.getWeightedValue() : o1.getWeightedValue()
+    public int compareTo(EdgeInfo o) {
+        return new Double(this.getWeightedValue()).compareTo(new Double(o.getWeightedValue()));
     }
 }
