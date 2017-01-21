@@ -70,7 +70,7 @@ public class SalesmanAnt extends Ant {
         List<Edge> edgesSortedByWeightList = possibleEdges.keySet().stream()
                 .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)))
                 .collect(Collectors.toList());
-        
+
         double random = ThreadLocalRandom.current().nextDouble(1);
         Map<Edge, Double> weightedPathValue = new HashMap<>();
         for (Map.Entry<Edge, EdgeInfo> entry : possibleEdges.entrySet()) {
