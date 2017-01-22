@@ -1,9 +1,8 @@
 
+import javafx.scene.layout.Pane;
+
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -23,25 +22,68 @@ public class SalesmanAnt extends Ant {
     }
 
     @Override
-    protected void producePheromone(Boolean isGlobal) {
-        double path_total_distance;
-        if (isGlobal)
-            path_total_distance = this.getBestDistance();
-        else
-            path_total_distance = this.calculateDistanceFromPath(this.getPath());
+    protected void producePheromone(List<Integer> path) {
+        double totalDistance;
+        totalDistance = this.calculateDistanceFromPath(path);
 
-        Map<Edge, EdgeInfo> path_segments = this.getPathInfo();
-        for (Edge key : path_segments.keySet()) {
-            double new_pheromone;
-            EdgeInfo edgeInfo;
-            synchronized (edgeInfo = path_segments.get(key)) {
-                if (isGlobal)
-                    new_pheromone = (1 - this.alpha) * edgeInfo.getPheromoneValue() + this.alpha * (1 / path_total_distance);
-                else
-                    new_pheromone = (1 - this.alpha) * edgeInfo.getPheromoneValue() + this.alpha * this.t0;
-                edgeInfo.setPheromone(beta, new_pheromone);
-            }
+        Map<Edge, EdgeInfo> pathInfo = this.getPathInfo(path);
+        for (EdgeInfo edgeInfo : pathInfo.values()) {
+            edgeInfo.setPheromone(beta, edgeInfo.getPheromoneValue() + this.alpha * (1 / totalDistance));
         }
+    }
+
+    protected void producePheromone() {
+
+    }
+
+    @Override
+    public void buildPath() {
+        List<Integer> bestPath = null;
+        List<List<Integer>> allPathes = new ArrayList<>();
+        this.bestDistance = Double.MAX_VALUE;
+        for (int i = 0; i < tourNumber; i++) {
+            if (g.isUpdating()) {
+                pause = true;
+                while (g.isUpdating()) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                pause = false;
+                bestPath = null;
+                allPathes = new ArrayList<>();
+                this.bestDistance = Double.MAX_VALUE;
+                init();
+            }
+            while (path.size() < g.nodeCount()) {
+                path.add(chooseNextNode());
+
+            }
+            //producePheromone();
+
+            if (bestPath == null) {
+                bestPath = path;
+            } else {
+                Double tmp_distance = calculateDistanceFromPath(this.getPath());
+                if (this.bestDistance > tmp_distance) {
+                    this.bestDistance = tmp_distance;
+                    bestPath = this.path;
+                }
+            }
+            allPathes.add(path);
+            //
+            init();
+        }
+        g.decayAll(beta, alpha);
+        path = bestPath;
+        this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
+        for(List<Integer> p : allPathes) {
+            producePheromone(p);
+        }
+        producePheromone(bestPath);
+        System.out.print(Arrays.toString(bestPath.toArray()));
     }
 
     /*
@@ -66,7 +108,7 @@ public class SalesmanAnt extends Ant {
      */
     @Override
     protected Integer chooseNextNode() {
-        Integer previous = getPath().get(getPath().size()-1);
+        Integer previous = getPath().get(getPath().size() - 1);
         Map<Edge, EdgeInfo> possibleEdges = getPossibleNextEdgeInfoMap();
         /*possibleEdges.keySet().stream().forEach((e) -> System.out.println(e));
         System.exit(0);*/
@@ -74,7 +116,9 @@ public class SalesmanAnt extends Ant {
                 .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)) * -1) //multiply by -1 for reverse order. highest first is needed.
                 .collect(Collectors.toList());
         int edgeCount = possibleEdges.size() - 1;
-
+       /* edgesSortedByWeightList.forEach(e -> {
+            System.out.println(possibleEdges.get(e).getWeightedValue());
+        });*/
         double random = ThreadLocalRandom.current().nextDouble();
 
         if (random < this.q0) {

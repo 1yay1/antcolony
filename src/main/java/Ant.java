@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
  * Created by yay on 20.12.2016.
  */
 public abstract class Ant implements Runnable {
-    private List<Integer> path;
-    private final Grid g;
-    private volatile boolean reset;
-    private volatile boolean hasReceivedUpdate;
-    private volatile boolean running;
-    private volatile boolean pause;
-    private BlockingQueue<List<Integer>> blockingQueue;
-    private final int tourNumber;
-    private double bestDistance;
+    protected List<Integer> path;
+    protected final Grid g;
+    protected volatile boolean reset;
+    protected volatile boolean hasReceivedUpdate;
+    protected volatile boolean running;
+    protected volatile boolean pause;
+    protected BlockingQueue<List<Integer>> blockingQueue;
+    protected final int tourNumber;
+    protected double bestDistance;
 
     public List<Integer> getPath() {
         return path;
@@ -33,7 +33,7 @@ public abstract class Ant implements Runnable {
      * Is called in constructor, and any time there is a change to the grid of nodes.
      * If there is a change to the grid, while we are currently producing a new path, we need to abort and initialize again.
      */
-    private void init() {
+    protected void init() {
         this.path = new ArrayList<>();
         this.path.add(1);
         reset = false;
@@ -41,7 +41,7 @@ public abstract class Ant implements Runnable {
         pause = false;
     }
 
-    protected Map<Edge, EdgeInfo> getPathInfo() {
+    protected Map<Edge, EdgeInfo> getPathInfo(List<Integer> path) {
         Set<Edge> edges = new HashSet<>();
         //System.out.println(Arrays.toString(path.toArray()));
         for (int i = 0; i < path.size() - 1; i++) {
@@ -59,7 +59,7 @@ public abstract class Ant implements Runnable {
      * Adds pheromone to the edgePheromoneMap in Grid g
      * Should be called for each edge traveled after building the path.
      */
-    protected abstract void producePheromone(Boolean isGlobal);
+    protected abstract void producePheromone(List<Integer> path);
 
     /**
      * Chooses the next node to travel.
@@ -104,8 +104,10 @@ public abstract class Ant implements Runnable {
      * Building the path. Reacts to changes to the grid.
      * If there are changes to the grid, it resets the currently built path.
      */
-    protected void buildPath() {
-        List<Integer> bestPath = null;
+
+    public abstract void buildPath();
+        /*List<Integer> bestPath = null;
+        List<List<Integer>> allPathes = new ArrayList<>();
         this.bestDistance = Double.MAX_VALUE;
         for (int i = 0; i < tourNumber; i++) {
             if (g.isUpdating()) {
@@ -119,13 +121,15 @@ public abstract class Ant implements Runnable {
                 }
                 pause = false;
                 bestPath = null;
+                allPathes = new ArrayList<>();
                 this.bestDistance = Double.MAX_VALUE;
                 init();
             }
             while (path.size() < g.nodeCount()) {
                 path.add(chooseNextNode());
-                producePheromone(false);
+
             }
+            //producePheromone();
 
             if (bestPath == null) {
                 bestPath = path;
@@ -136,17 +140,21 @@ public abstract class Ant implements Runnable {
                     bestPath = this.path;
                 }
             }
+            allPathes.add(path);
             //
             init();
         }
         path = bestPath;
         this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
-        producePheromone(true);
-        System.out.println(Arrays.toString(bestPath.toArray()) + "d: " + calculateDistanceFromPath(bestPath));
-    }
+        for(List<Integer> p : allPathes) {
+            producePheromone(p);
+        }
+        producePheromone(bestPath);
+        System.out.print(Arrays.toString(bestPath.toArray()));*/
 
-    protected Double calculateDistanceFromPath(List<Integer> bestPath) {
-        Map<Edge, EdgeInfo> map = getPathInfo();
+
+    protected Double calculateDistanceFromPath(List<Integer> path) {
+        Map<Edge, EdgeInfo> map = getPathInfo(path);
         return map.values().stream()
                 .mapToDouble((v) -> v.getDistance())
                 .sum();

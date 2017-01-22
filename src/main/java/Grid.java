@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Created by yay on 21.12.2016.
@@ -18,6 +19,7 @@ public class Grid {
     public Grid(Map<Integer, AntNode> map) {
         synchronizedIntegerNodeMap = new ConcurrentHashMap(map);
         synchronizedEdgePheromoneMap = new ConcurrentHashMap();
+        calculateEdgeInfos();
         updating = false;
     }
 
@@ -33,6 +35,16 @@ public class Grid {
         return synchronizedEdgePheromoneMap.keySet();
     }
 
+
+    private void calculateEdgeInfos() {
+        ArrayList<Integer> nodes = synchronizedIntegerNodeMap.keySet().stream().sorted().collect(Collectors.toCollection(ArrayList::new));
+        for(int i = 0; i < nodes.size(); i++) {
+            for(int j = i+1; j < nodes.size(); j++) {
+                Edge e = new Edge(nodes.get(i),nodes.get(j));
+                getOrCreateEdgeInfo(e);
+            }
+        }
+    }
     /**
      * Loads a file as the city grid.
      *
@@ -102,6 +114,16 @@ public class Grid {
             }
         }
         return edgeInfo;
+    }
+
+    protected void putEdgeInfo(Edge key, EdgeInfo value) {
+        this.synchronizedEdgePheromoneMap.put(key, value);
+    }
+
+    protected void decayAll(double beta, double decayRate) {
+        for(EdgeInfo edgeInfo: synchronizedEdgePheromoneMap.values()) {
+            edgeInfo.setPheromone(beta, edgeInfo.getPheromoneValue() * decayRate);
+        }
     }
 
     /**
