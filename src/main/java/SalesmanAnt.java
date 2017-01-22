@@ -25,7 +25,7 @@ public class SalesmanAnt extends Ant {
     @Override
     protected void producePheromone(Boolean isGlobal) {
         double path_total_distance;
-        if (isGlobal == true)
+        if (isGlobal)
             path_total_distance = this.getBestDistance();
         else
             path_total_distance = this.calculateDistanceFromPath(this.getPath());
@@ -33,7 +33,7 @@ public class SalesmanAnt extends Ant {
         Map<Edge, EdgeInfo> path_segments = this.getPathInfo();
         for (Edge key : path_segments.keySet()) {
             double new_pheromone;
-            if (isGlobal == true)
+            if (isGlobal)
                 new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * (1 / path_total_distance);
             else
                 new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * this.t0;
@@ -43,7 +43,6 @@ public class SalesmanAnt extends Ant {
     }
 
     /*
-    todo:
         remove weightededge class, distance and pheromone is saved in edgeinfo fix roulette select.
            // Returns the selected index based on the weights(probabilities)
             int rouletteSelect(double[] weight) {
@@ -77,7 +76,7 @@ public class SalesmanAnt extends Ant {
         if (random < this.q0) {
             Edge edge = edgesSortedByWeightList.get(0);
             Integer arr[] = edge.getAsArray();
-            return previous == arr[0] ? arr[1] : arr[0];
+            return previous.equals(arr[0]) ? arr[1] : arr[0];
         }
 
         double sumValues = 0;
@@ -92,12 +91,12 @@ public class SalesmanAnt extends Ant {
             sumValues -= possibleEdges.get(e).getWeightedValue();
             if (sumValues < 0) {
                 Integer arr[] = e.getAsArray();
-                return previous == arr[0] ? arr[1] : arr[0];
+                return previous.equals(arr[0]) ? arr[1] : arr[0];
             }
         }
         Edge edge = edgesSortedByWeightList.get(edgeCount);
         Integer arr[] = edge.getAsArray();
-        return previous == arr[0] ? arr[1] : arr[0];
+        return previous.equals(arr[0]) ? arr[1] : arr[0];
     }
 
 
