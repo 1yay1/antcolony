@@ -68,62 +68,36 @@ public class SalesmanAnt extends Ant {
         Integer previous = getPath().get(getPath().size()-1);
         Map<Edge, EdgeInfo> possibleEdges = getPossibleNextEdgeInfoMap();
         List<Edge> edgesSortedByWeightList = possibleEdges.keySet().stream()
-                .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)))
+                .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)) * -1) //multiply by -1 for reverse order. highest first is needed.
                 .collect(Collectors.toList());
+        int edgeCount = possibleEdges.size() - 1;
 
-        double random = ThreadLocalRandom.current().nextDouble(1);
-        Map<Edge, Double> weightedPathValue = new HashMap<>();
-        for (Map.Entry<Edge, EdgeInfo> entry : possibleEdges.entrySet()) {
-            double distance = entry.getValue().getDistance();
-            double pheromone = entry.getValue().getPheromoneValue();
-            weightedPathValue.put(entry.getKey(), Math.pow((1 / distance), beta) * pheromone);
-        }
+        double random = ThreadLocalRandom.current().nextDouble();
+
         if (random < this.q0) {
-            Edge max = weightedPathValue.entrySet().stream().max((entry1, entry2) ->
-                    entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
-            return (getPath().get(getPath().size() - 1).equals(max.getAsArray()[0]))
-                    ? max.getAsArray()[1] : max.getAsArray()[0];
-
+            Edge edge = edgesSortedByWeightList.get(0);
+            Integer arr[] = edge.getAsArray();
+            return previous == arr[0] ? arr[1] : arr[0];
         }
+
         double sumValues = 0;
-        for (Edge e : weightedPathValue.keySet()) {
-            sumValues += weightedPathValue.get(e);
+        for (Edge e : edgesSortedByWeightList) {
+            sumValues += possibleEdges.get(e).getWeightedValue();
         }
         //List<WeightedEdge> normalizedPathValue;
         sumValues = sumValues * ThreadLocalRandom.current().nextDouble();
-        ArrayList<Edge> edges = new ArrayList(weightedPathValue.keySet());
-        for (Edge e : edges) {
-            //normalizedPathValue.add(new WeightedEdge((Integer) e.toArray()[0], (Integer) e.toArray()[1], sumValues));
-            sumValues -= weightedPathValue.get(e);
-            if (sumValues < 0) {
-                Object[] arr = e.toArray();
-                Integer first = (Integer) arr[0];
-                Integer second = (Integer) arr[1];
-                if (first.equals(previous)) {
-                    return second;
-                } else {
-                    return first;
-                }
-            }
-        }
-        Edge e = edges.get(edges.size()-1);
-        Object[] arr = e.toArray();
-        Integer first = (Integer) arr[0];
-        Integer second = (Integer) arr[1];
-        if (first.equals(previous)) {
-            return second;
-        } else {
-            return first;
-        }
 
-        /*double randomselectPath = ThreadLocalRandom.current().nextDouble(sumValues);
-        for (WeightedEdge we : normalizedPathValue) {
-            if (we.weightedWay < randomselectPath) {
-                return (getPath().get(getPath().size() - 1).equals(we.getAsArray()[0]))
-                        ? we.getAsArray()[1] : we.getAsArray()[0];
+        for (Edge e : edgesSortedByWeightList) {
+            //normalizedPathValue.add(new WeightedEdge((Integer) e.toArray()[0], (Integer) e.toArray()[1], sumValues));
+            sumValues -= possibleEdges.get(e).getWeightedValue();
+            if (sumValues < 0) {
+                Integer arr[] = e.getAsArray();
+                return previous == arr[0] ? arr[1] : arr[0];
             }
         }
-        return null;*/
+        Edge edge = edgesSortedByWeightList.get(edgeCount);
+        Integer arr[] = edge.getAsArray();
+        return previous == arr[0] ? arr[1] : arr[0];
     }
 
 
