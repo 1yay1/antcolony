@@ -41,7 +41,7 @@ public class Grid {
         for(int i = 0; i < nodes.size(); i++) {
             for(int j = i+1; j < nodes.size(); j++) {
                 Edge e = new Edge(nodes.get(i),nodes.get(j));
-                getOrCreateEdgeInfo(e);
+                initializeEdgeInfo(e);
             }
         }
     }
@@ -96,7 +96,7 @@ public class Grid {
         return lines;
     }
 
-    private EdgeInfo getEdgeInfo(Edge edge) {
+    public EdgeInfo getEdgeInfo(Edge edge) {
         return synchronizedEdgePheromoneMap.get(edge);
     }
 
@@ -104,7 +104,7 @@ public class Grid {
         synchronizedEdgePheromoneMap.put(edge, edgeInfo);
     }
 
-    protected EdgeInfo getOrCreateEdgeInfo(Edge e) {
+    /*protected EdgeInfo getEdgeInfo(Edge e) {
         EdgeInfo edgeInfo = this.getEdgeInfo(e);
         synchronized (this) {
             if (edgeInfo == null) {
@@ -114,10 +114,12 @@ public class Grid {
             }
         }
         return edgeInfo;
-    }
+    }*/
 
-    protected void putEdgeInfo(Edge key, EdgeInfo value) {
-        this.synchronizedEdgePheromoneMap.put(key, value);
+    private void initializeEdgeInfo(Edge e) {
+        Integer[] edgeIntegers = e.getAsArray();
+        EdgeInfo edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
+        this.addEdgeInfo(e, edgeInfo);
     }
 
     protected void decayAll(double beta, double decayRate) {

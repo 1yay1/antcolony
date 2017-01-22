@@ -50,7 +50,7 @@ public abstract class Ant implements Runnable {
         edges.add(new Edge(path.get(0), path.get(path.size() - 1)));
         Map<Edge, EdgeInfo> edgeEdgeInfoMap = new HashMap<>();
         for (Edge e : edges) {
-            edgeEdgeInfoMap.put(e, g.getOrCreateEdgeInfo(e));
+            edgeEdgeInfoMap.put(e, g.getEdgeInfo(e));
         }
         return edgeEdgeInfoMap;
     }
@@ -81,7 +81,7 @@ public abstract class Ant implements Runnable {
         return g.getNodeKeySet().stream()
                 .filter((k) -> !path.contains(k))
                 .map((k) -> new Edge(k, path.get(path.size()-1)))
-                .collect(Collectors.toMap((e) -> e, g::getOrCreateEdgeInfo));
+                .collect(Collectors.toMap((e) -> e, g::getEdgeInfo));
     }
 
     protected double getBestDistance() {
