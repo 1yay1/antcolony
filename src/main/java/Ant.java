@@ -43,7 +43,7 @@ public abstract class Ant implements Runnable {
 
     protected Map<Edge, EdgeInfo> getPathInfo() {
         Set<Edge> edges = new HashSet<>();
-        System.out.println(Arrays.toString(path.toArray()));
+        //System.out.println(Arrays.toString(path.toArray()));
         for (int i = 0; i < path.size() - 1; i++) {
             edges.add(new Edge(path.get(i), path.get(i + 1)));
         }
@@ -124,10 +124,9 @@ public abstract class Ant implements Runnable {
             }
             while (path.size() < g.nodeCount()) {
                 path.add(chooseNextNode());
+                producePheromone(false);
             }
-            producePheromone(false);
-
-
+            
             if (bestPath == null) {
                 bestPath = path;
             } else {
@@ -143,6 +142,7 @@ public abstract class Ant implements Runnable {
         path = bestPath;
         this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
         producePheromone(true);
+        System.out.println(Arrays.toString(bestPath.toArray()));
     }
 
     protected Double calculateDistanceFromPath(List<Integer> bestPath) {

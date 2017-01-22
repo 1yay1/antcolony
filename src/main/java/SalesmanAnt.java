@@ -33,13 +33,15 @@ public class SalesmanAnt extends Ant {
         Map<Edge, EdgeInfo> path_segments = this.getPathInfo();
         for (Edge key : path_segments.keySet()) {
             double new_pheromone;
-            if (isGlobal)
-                new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * (1 / path_total_distance);
-            else
-                new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * this.t0;
-            path_segments.get(key).setPheromone(beta, new_pheromone);
+            EdgeInfo edgeInfo;
+            synchronized (edgeInfo = path_segments.get(key)) {
+                if (isGlobal)
+                    new_pheromone = (1 - this.alpha) * edgeInfo.getPheromoneValue() + this.alpha * (1 / path_total_distance);
+                else
+                    new_pheromone = (1 - this.alpha) * edgeInfo.getPheromoneValue() + this.alpha * this.t0;
+                edgeInfo.setPheromone(beta, new_pheromone);
+            }
         }
-
     }
 
     /*
@@ -66,6 +68,8 @@ public class SalesmanAnt extends Ant {
     protected Integer chooseNextNode() {
         Integer previous = getPath().get(getPath().size()-1);
         Map<Edge, EdgeInfo> possibleEdges = getPossibleNextEdgeInfoMap();
+        /*possibleEdges.keySet().stream().forEach((e) -> System.out.println(e));
+        System.exit(0);*/
         List<Edge> edgesSortedByWeightList = possibleEdges.keySet().stream()
                 .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)) * -1) //multiply by -1 for reverse order. highest first is needed.
                 .collect(Collectors.toList());
