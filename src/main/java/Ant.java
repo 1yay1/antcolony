@@ -126,7 +126,7 @@ public abstract class Ant implements Runnable {
                 path.add(chooseNextNode());
                 producePheromone(false);
             }
-            
+
             if (bestPath == null) {
                 bestPath = path;
             } else {
@@ -142,7 +142,7 @@ public abstract class Ant implements Runnable {
         path = bestPath;
         this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
         producePheromone(true);
-        System.out.println(Arrays.toString(bestPath.toArray()));
+        System.out.println(Arrays.toString(bestPath.toArray()) + "d: " + calculateDistanceFromPath(bestPath));
     }
 
     protected Double calculateDistanceFromPath(List<Integer> bestPath) {
