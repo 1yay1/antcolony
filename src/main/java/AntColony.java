@@ -16,7 +16,7 @@ public class AntColony {
 
         final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1000);
         Ant a = new SalesmanAnt(g, blockingQueue, 10, 0.1, 1, 0.5, 0.1);
-        for(int i = 0; i < 1000; i++) {
+        for(int i = 0; i < 10000; i++) {
             a.buildPath();
         }
         //a.getPathInfo().values().stream().forEach((v) -> System.out.println(v.getDistance() + " : " + v.getPheromoneValue() + " : " + v.getWeightedValue()));

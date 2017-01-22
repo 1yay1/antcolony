@@ -35,7 +35,7 @@ public abstract class Ant implements Runnable {
      */
     protected void init() {
         this.path = new ArrayList<>();
-        this.path.add(1);
+        this.path.add(ThreadLocalRandom.current().nextInt(g.nodeCount()) + 1);
         reset = false;
         hasReceivedUpdate = false;
         pause = false;

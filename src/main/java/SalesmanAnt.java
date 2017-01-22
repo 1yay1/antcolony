@@ -76,14 +76,13 @@ public class SalesmanAnt extends Ant {
             //
             init();
         }
-        g.decayAll(beta, alpha);
         path = bestPath;
         this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
         for(List<Integer> p : allPathes) {
             producePheromone(p);
         }
         producePheromone(bestPath);
-        System.out.print(Arrays.toString(bestPath.toArray()));
+        System.out.println(Arrays.toString(bestPath.toArray()));
     }
 
     /*
@@ -112,6 +111,7 @@ public class SalesmanAnt extends Ant {
         Map<Edge, EdgeInfo> possibleEdges = getPossibleNextEdgeInfoMap();
         /*possibleEdges.keySet().stream().forEach((e) -> System.out.println(e));
         System.exit(0);*/
+        possibleEdges.values().forEach((v) -> v.calculateWeightedValue(beta));
         List<Edge> edgesSortedByWeightList = possibleEdges.keySet().stream()
                 .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)) * -1) //multiply by -1 for reverse order. highest first is needed.
                 .collect(Collectors.toList());
