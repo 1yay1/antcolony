@@ -17,8 +17,8 @@ public class EdgeInfo implements Comparable<EdgeInfo> {
         this.weightedValue = 0;
     }
     
-    public double calculateWeightedValue() {
-        return Math.pow((1/distance), BETA) * pheromone.getValue();
+    public double calculateWeightedValue(double beta) {
+        return Math.pow((1/distance), beta) * pheromone.getValue();
     }
 
     public EdgeInfo(AntNode n1, AntNode n2) {
@@ -29,9 +29,9 @@ public class EdgeInfo implements Comparable<EdgeInfo> {
         return pheromone.getValue();
     }
 
-    public void setPheromone(Double pheromoneValue) {
+    public void setPheromone(double beta, double pheromoneValue) {
         this.pheromone.setValue(pheromoneValue);
-        this.weightedValue = calculateWeightedValue();
+        this.weightedValue = calculateWeightedValue(beta);
     }
 
     public double getDistance() {

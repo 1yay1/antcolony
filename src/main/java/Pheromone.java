@@ -40,7 +40,7 @@ public class Pheromone {
     /**
      * Default setter for the pheromone value
      */ 
-    public void setValue(Double value) {
+    public void setValue(double value) {
         this.value=value;
     }
 

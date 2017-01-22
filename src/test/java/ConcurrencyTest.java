@@ -27,7 +27,7 @@ public class ConcurrencyTest {
             protected void producePheromone(Boolean isGlobal) {
                 Edge edge = g.getEdgeKeySet().iterator().next();
                 EdgeInfo edgeInfo = g.getOrCreateEdgeInfo(edge);
-                edgeInfo.setPheromone(5d);
+                edgeInfo.setPheromone(0.1, 5d);
                 //System.out.print(edge.toString() + " " + edgeInfo.getDistance());
                 try {
                     Thread.sleep(1000);

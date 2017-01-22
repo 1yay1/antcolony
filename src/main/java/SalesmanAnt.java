@@ -37,7 +37,7 @@ public class SalesmanAnt extends Ant {
                 new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * (1 / path_total_distance);
             else
                 new_pheromone = (1 - this.alpha) * path_segments.get(key).getPheromoneValue() + this.alpha * this.t0;
-            path_segments.get(key).setPheromone(new_pheromone);
+            path_segments.get(key).setPheromone(beta, new_pheromone);
         }
 
     }
@@ -98,6 +98,4 @@ public class SalesmanAnt extends Ant {
         Integer arr[] = edge.getAsArray();
         return previous.equals(arr[0]) ? arr[1] : arr[0];
     }
-
-
 }
