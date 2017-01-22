@@ -122,9 +122,9 @@ public class Grid {
         this.addEdgeInfo(e, edgeInfo);
     }
 
-    protected void decayAll(double beta, double decayRate) {
+    protected void decayAll(double beta) {
         for(EdgeInfo edgeInfo: synchronizedEdgePheromoneMap.values()) {
-            edgeInfo.setPheromone(beta, edgeInfo.getPheromoneValue() * decayRate);
+            edgeInfo.setPheromone( edgeInfo.getPheromoneValue() * (1 - beta));
         }
     }
 

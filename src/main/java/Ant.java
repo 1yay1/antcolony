@@ -16,6 +16,9 @@ public abstract class Ant implements Runnable {
     protected BlockingQueue<List<Integer>> blockingQueue;
     protected final int tourNumber;
     protected double bestDistance;
+    protected List<Integer> bestGlobalPath;
+
+    public List<Integer> getBestGlobalPath() {return bestGlobalPath;}
 
     public List<Integer> getPath() {
         return path;
@@ -25,6 +28,8 @@ public abstract class Ant implements Runnable {
         this.g = g;
         this.blockingQueue = blockingQueue;
         this.tourNumber = tourNumber;
+        bestDistance = Double.MAX_VALUE;
+        bestGlobalPath = null;
         init();
     }
 

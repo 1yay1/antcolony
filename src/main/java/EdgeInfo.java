@@ -29,7 +29,7 @@ public class EdgeInfo implements Comparable<EdgeInfo> {
         return pheromone.getValue();
     }
 
-    public void setPheromone(double beta, double pheromoneValue) {
+    public void setPheromone(double pheromoneValue) {
         this.pheromone.setValue(pheromoneValue);
         //calculateWeightedValue(beta);
     }

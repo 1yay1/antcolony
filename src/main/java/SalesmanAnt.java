@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
  * Created by yay on 21.12.2016.
  */
 public class SalesmanAnt extends Ant {
-    private double q0, alpha, beta, t0;
+    private double q0, alpha, beta, decayRate;
 
-    public SalesmanAnt(Grid g, BlockingQueue blockingQueue, int tourNumber, double q0, double alpha, double beta, double t0) {
+    public SalesmanAnt(Grid g, BlockingQueue blockingQueue, int tourNumber, double q0, double alpha, double beta, double decayRate) {
         super(g, blockingQueue, tourNumber);
         this.q0 = q0;
         this.alpha = alpha;
         this.beta = beta;
-        this.t0 = t0;
+        this.decayRate = decayRate;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class SalesmanAnt extends Ant {
 
         Map<Edge, EdgeInfo> pathInfo = this.getPathInfo(path);
         for (EdgeInfo edgeInfo : pathInfo.values()) {
-            edgeInfo.setPheromone(beta, edgeInfo.getPheromoneValue() + this.alpha * (1 / totalDistance));
+            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() + this.alpha * (1 / totalDistance));
         }
     }
 
@@ -40,7 +40,7 @@ public class SalesmanAnt extends Ant {
     public void buildPath() {
         List<Integer> bestPath = null;
         List<List<Integer>> allPathes = new ArrayList<>();
-        this.bestDistance = Double.MAX_VALUE;
+        //this.bestDistance = Double.MAX_VALUE;
         for (int i = 0; i < tourNumber; i++) {
             if (g.isUpdating()) {
                 pause = true;
@@ -54,35 +54,38 @@ public class SalesmanAnt extends Ant {
                 pause = false;
                 bestPath = null;
                 allPathes = new ArrayList<>();
+                bestGlobalPath = null;
                 this.bestDistance = Double.MAX_VALUE;
                 init();
             }
             while (path.size() < g.nodeCount()) {
                 path.add(chooseNextNode());
-
             }
             //producePheromone();
 
-            if (bestPath == null) {
+            if (bestPath == null || calculateDistanceFromPath(bestPath) > calculateDistanceFromPath(path)) {
                 bestPath = path;
-            } else {
-                Double tmp_distance = calculateDistanceFromPath(this.getPath());
-                if (this.bestDistance > tmp_distance) {
-                    this.bestDistance = tmp_distance;
-                    bestPath = this.path;
-                }
             }
             allPathes.add(path);
             //
             init();
         }
+        if(bestGlobalPath == null || calculateDistanceFromPath(bestGlobalPath) > calculateDistanceFromPath(bestPath)) {
+            bestGlobalPath = bestPath;
+        }
         path = bestPath;
-        this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
+        g.decayAll(decayRate);
+        //this.bestDistance = calculateDistanceFromPath(bestPath); // Right side of the assigment can be replaced by a variable so the distance calculation is not perfomed twice
         for(List<Integer> p : allPathes) {
             producePheromone(p);
         }
-        producePheromone(bestPath);
-        System.out.println(Arrays.toString(bestPath.toArray()));
+        producePheromone(bestGlobalPath);
+        //System.out.println(Arrays.toString(bestPath.toArray()) + ":" + calculateDistanceFromPath(bestPath));
+    }
+
+    protected void removePheromoneOnLastEdge(double epsilon, double t0) {
+        EdgeInfo edgeInfo = g.getEdgeInfo(new Edge(path.get(path.size()-1), path.get(path.size()-2)));
+        edgeInfo.setPheromone((1-epsilon) * edgeInfo.getPheromoneValue() + epsilon * t0);
     }
 
     /*
