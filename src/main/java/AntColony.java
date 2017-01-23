@@ -15,28 +15,31 @@ public class AntColony {
         File f = new File("06-map-100x100-50.txt");
         final Grid g = new Grid(f);
 
-        double q0, alpha, beta, decayRate;
+        double q0, alpha, beta, decayRate, epsilon, t0, p;
         double step = 0.1;
-
+        
         int antCount = 25;
         int tours = 20;
         q0 = 0.25;
         alpha = 1;
         beta = 2;
         decayRate = 0.2;
-
+        epsilon=0.2;
+        t0=0.1;
+        p=decayRate;
         final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1000);
-        Ant aMeise = new SalesmanAnt(g, blockingQueue, antCount, tours , q0, alpha, beta, decayRate);
-        Ant bMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
-        Ant cMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
+        Ant aMeise=new SalesmanAntACS(g, blockingQueue, antCount, tours, q0, alpha, beta, epsilon, p, t0);
+        //Ant aMeise = new SalesmanAntACS(g, blockingQueue, antCount, tours , q0, alpha, beta, decayRate);
+        //Ant bMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
+        //Ant cMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
         Thread aThread = new Thread(aMeise);
-        Thread bThread = new Thread(bMeise);
-        Thread cThread = new Thread(cMeise);
+        //Thread bThread = new Thread(bMeise);
+        //Thread cThread = new Thread(cMeise);
         aThread.start();
-        bThread.start();
-        cThread.start();
+        //bThread.start();
+        //cThread.start();
         System.out.print("Paras: q0: " + q0 + " alpha: " + alpha + " beta: " + beta + " t0: " + decayRate + "\n");
-
+        int d=1;
         while (true) {
             List<Integer> path = blockingQueue.poll();
             if(path == null) {
@@ -47,7 +50,8 @@ public class AntColony {
                 }
                 continue;
             }
-            System.out.println("D: " + g.calculateDistanceFromPath(path));
+            System.out.println(d+"\t" + g.calculateDistanceFromPath(path));
+            d++;
         }
 
         //System.out.println("\t" + Arrays.toString(a.getPath().toArray()) +" D : " + a.calculateDistanceFromPath(a.getPath()));
