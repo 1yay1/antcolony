@@ -28,7 +28,6 @@ public class AntGUI extends Application {
 
     @Override
     public void start(Stage stage) {
-        BlockingQueue arrayBlockingQueue = new ArrayBlockingQueue(1000);
 
         BorderPane mainRoot = new BorderPane();
         Pane root = new Pane();
@@ -115,13 +114,7 @@ public class AntGUI extends Application {
                         });
 
                     }
-                    /*Map<Edge, EdgeInfo> pathInfo = g.getPathInfo(path);
-                    pathInfo.keySet().stream().forEach((k) -> {
-                        edgeLineMap.get(k).setVisible(true);
-                    });*/
-
                 }
-                //System.out.println("D: " + g.calculateDistanceFromPath(path));
             }
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
