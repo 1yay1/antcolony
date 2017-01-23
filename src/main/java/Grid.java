@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -10,6 +11,7 @@ public class Grid {
     private final ConcurrentHashMap<Edge, EdgeInfo> synchronizedEdgePheromoneMap;
     private final ConcurrentHashMap<Integer, AntNode> synchronizedIntegerNodeMap;
     private volatile boolean updating;
+    private volatile List<Integer> globalBestPath;
 
 
     public Grid(File f) {
@@ -21,6 +23,17 @@ public class Grid {
         synchronizedEdgePheromoneMap = new ConcurrentHashMap();
         calculateEdgeInfos();
         updating = false;
+        globalBestPath = null;
+    }
+
+    public synchronized void setGlobalBestPath(List<Integer> globalBestPath) {
+        if (this.globalBestPath == null || calculateDistanceFromPath(globalBestPath) < calculateDistanceFromPath(globalBestPath)) {
+            this.globalBestPath = globalBestPath;
+        }
+    }
+
+    public List<Integer> getGlobalBestPath() {
+        return globalBestPath;
     }
 
     public int nodeCount() {
@@ -98,6 +111,7 @@ public class Grid {
     }
 
     public EdgeInfo getEdgeInfo(Edge edge) {
+        //System.out.println(edge.toString());
         return synchronizedEdgePheromoneMap.get(edge);
     }
 
@@ -109,7 +123,7 @@ public class Grid {
         EdgeInfo edgeInfo = this.getEdgeInfo(e);
         synchronized (this) {
             if (edgeInfo == null) {
-                Integer[] edgeIntegers = e.getAsArray();
+                Integer[] edgeIntegers = e.getArr();
                 edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
                 this.addEdgeInfo(e, edgeInfo);
             }
@@ -118,14 +132,20 @@ public class Grid {
     }*/
 
     private void initializeEdgeInfo(Edge e) {
-        Integer[] edgeIntegers = e.getAsArray();
+        Integer[] edgeIntegers = e.getArr();
         EdgeInfo edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
         this.addEdgeInfo(e, edgeInfo);
     }
 
-    protected void decayAll(double beta) {
+    protected void decayAll(double decayRate) {
         for (EdgeInfo edgeInfo : synchronizedEdgePheromoneMap.values()) {
-            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - beta));
+            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - decayRate));
+        }
+    }
+
+    protected void decay(List<Integer> path, double decayRate) {
+        for(EdgeInfo edgeInfo: getPathInfo(path).values()) {
+            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - decayRate));
         }
     }
 
@@ -158,7 +178,7 @@ public class Grid {
      * @param ants
      */
     public void addNode(AntNode n, Collection<Ant> ants) {
-        System.out.print("UPDATING..");
+        System.out.print("Adding " + n.getId());
         updating = true;
         for (Ant a : ants) {
             while (!a.isPaused()) {
@@ -171,19 +191,25 @@ public class Grid {
         }
         synchronizedIntegerNodeMap.forEach((k, v) -> addEdgeInfo(new Edge(k, n.getId()), new EdgeInfo(v, n)));
         synchronizedIntegerNodeMap.put(n.getId(), n);
+        this.globalBestPath = null;
         updating = false;
-        System.out.print("UPDATED!..");
+        System.out.print("Added " + n.getId());
     }
 
+    public Integer getRandomStartingNode() {
+        List<Integer> nodes = new ArrayList<>(getNodeKeySet());
+        Collections.shuffle(nodes, ThreadLocalRandom.current());
+        return nodes.get(0);
+    }
     /**
-     * removes a node, same blocknig as addNode method
+     * removes a node, same blocking as addNode method
      * also has to remove all edges already added to the edge map containing the node to be removed
      *
      * @param id
      * @param ants
      */
     public void removeNode(Integer id, Collection<Ant> ants) {
-        System.out.print("UPDATING..");
+        System.out.println("Removing " + id);
         updating = true;
         for (Ant a : ants) {
             while (!a.isPaused()) {
@@ -197,7 +223,7 @@ public class Grid {
         synchronized (this) {
             synchronizedIntegerNodeMap.remove(id);
             for (Edge e : synchronizedEdgePheromoneMap.keySet()) {
-                for (Integer i : e) {
+                for (Integer i : e.getArr()) {
                     if (i == id) {
                         synchronizedEdgePheromoneMap.remove(e);
                         break;
@@ -205,11 +231,12 @@ public class Grid {
                 }
             }
         }
+        this.globalBestPath = null;
         for (Ant a : ants) {
             a.resume();
         }
         updating = false;
-        System.out.print("UPDATED!..");
+        System.out.println("Removed " + id);
     }
 
     public String getNodesAsString() {

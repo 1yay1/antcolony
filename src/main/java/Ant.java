@@ -43,7 +43,7 @@ public abstract class Ant implements Runnable {
      */
     protected void init() {
         this.path = new ArrayList<>();
-        this.path.add(ThreadLocalRandom.current().nextInt(g.nodeCount()) + 1);
+        this.path.add(g.getRandomStartingNode());
         reset = false;
         hasReceivedUpdate = false;
         pause = false;
@@ -194,18 +194,16 @@ public abstract class Ant implements Runnable {
     public void run() {
         running = true;
         int i = 0;
-        while (i < MAX_ITER){
+        while (true){
             buildPath();
-            boolean success = blockingQueue.offer(bestGlobalPath);
-            while (!success) {
-                try {
-                    Thread.sleep(1);
-                    success = blockingQueue.offer(bestGlobalPath);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            synchronized (blockingQueue) {
+                List<Integer> oldPath = blockingQueue.poll();
+                if (oldPath == null || oldPath.size() != bestGlobalPath.size() || g.calculateDistanceFromPath(oldPath) > g.calculateDistanceFromPath(bestGlobalPath)) {
+                    oldPath = bestGlobalPath;
                 }
+                blockingQueue.offer(oldPath);
             }
-            i++;
+
         }
     }
 

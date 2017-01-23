@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class AntColony {
     public static void main(String[] args) {
-        File f = new File("06-map-100x100-50.txt");
+        File f = new File("06-map-100x100-200.txt");
         final Grid g = new Grid(f);
 
         double q0, alpha, beta, decayRate, epsilon, t0, p;
@@ -49,7 +49,7 @@ public class AntColony {
                     e.printStackTrace();
                 }
                 continue;
-            }
+                }
             System.out.println(d+"\t" + g.calculateDistanceFromPath(path));
             d++;
         }

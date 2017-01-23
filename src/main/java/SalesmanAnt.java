@@ -1,7 +1,3 @@
-
-import javafx.scene.layout.Pane;
-
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
@@ -11,7 +7,7 @@ import java.util.stream.Collectors;
  * Created by yay on 21.12.2016.
  */
 public class SalesmanAnt extends Ant {
-    private double q0, alpha, beta, decayRate;
+    protected double q0, alpha, beta, decayRate;
 
     public SalesmanAnt(Grid g, BlockingQueue blockingQueue,int ants, int tourNumber, double q0, double alpha, double beta, double decayRate) {
         super(g, blockingQueue, ants, tourNumber);
@@ -83,10 +79,7 @@ public class SalesmanAnt extends Ant {
         producePheromone(bestGlobalPath);
     }
 
-    protected void removePheromoneOnLastEdge(double epsilon, double t0) {
-        EdgeInfo edgeInfo = g.getEdgeInfo(new Edge(path.get(path.size()-1), path.get(path.size()-2)));
-        edgeInfo.setPheromone((1-epsilon) * edgeInfo.getPheromoneValue() + epsilon * t0);
-    }
+
 
     /*
         remove weightededge class, distance and pheromone is saved in edgeinfo fix roulette select.
@@ -108,6 +101,12 @@ public class SalesmanAnt extends Ant {
                 return weight.length - 1;
             }
      */
+    protected List<Edge> getEdgesSortedByWeight(Collection<Edge> edges) {
+        List<Edge> edgesSortedByWeight = new ArrayList<>(edges);
+        Collections.sort(edgesSortedByWeight, (Edge o1, Edge o2) -> g.getEdgeInfo(o2).compareTo(g.getEdgeInfo(o1)));
+        return edgesSortedByWeight;
+    }
+
     @Override
     protected Integer chooseNextNode() {
         Integer previous = getPath().get(getPath().size() - 1);
@@ -115,9 +114,7 @@ public class SalesmanAnt extends Ant {
         /*possibleEdges.keySet().stream().forEach((e) -> System.out.println(e));
         System.exit(0);*/
         possibleEdges.values().forEach((v) -> v.calculateWeightedValue(alpha, beta));
-        List<Edge> edgesSortedByWeightList = possibleEdges.keySet().stream()
-                .sorted((k1, k2) -> possibleEdges.get(k1).compareTo(possibleEdges.get(k2)) * -1) //multiply by -1 for reverse order. highest first is needed.
-                .collect(Collectors.toList());
+        List<Edge> edgesSortedByWeightList = getEdgesSortedByWeight(possibleEdges.keySet());
         int edgeCount = possibleEdges.size() - 1;
        /* edgesSortedByWeightList.forEach(e -> {
             System.out.println(possibleEdges.get(e).getWeightedValue());
@@ -126,7 +123,7 @@ public class SalesmanAnt extends Ant {
 
         if (random < this.q0) {
             Edge edge = edgesSortedByWeightList.get(0);
-            Integer arr[] = edge.getAsArray();
+            Integer arr[] = edge.getArr();
             return previous.equals(arr[0]) ? arr[1] : arr[0];
         }
 
@@ -141,12 +138,12 @@ public class SalesmanAnt extends Ant {
             //normalizedPathValue.add(new WeightedEdge((Integer) e.toArray()[0], (Integer) e.toArray()[1], sumValues));
             sumValues -= possibleEdges.get(e).getWeightedValue();
             if (sumValues < 0) {
-                Integer arr[] = e.getAsArray();
+                Integer arr[] = e.getArr();
                 return previous.equals(arr[0]) ? arr[1] : arr[0];
             }
         }
         Edge edge = edgesSortedByWeightList.get(edgeCount);
-        Integer arr[] = edge.getAsArray();
+        Integer arr[] = edge.getArr();
         return previous.equals(arr[0]) ? arr[1] : arr[0];
     }
 }
