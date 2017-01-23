@@ -51,22 +51,21 @@ public class AntGUI extends Application {
         double decayRate = 0.2;
 
         final List<Ant> ants = new ArrayList<>();
-        final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1000);
+        final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1);
         final List<Thread> antColonyThreads = new ArrayList<>();
 
-
-        final Map<Edge, Line> edgeLineMap = new HashMap<>();
+        final Map<Edge, FXAntLine> edgeLineMap = new HashMap<>();
 
         scene.setOnMouseClicked(event -> {
             if (event.getButton().equals(MouseButton.PRIMARY)) {
                 int x = (int) event.getSceneX();
                 int y = (int) event.getSceneY();
                 AntNode antNode = new AntNode(x, y);
-                FXAntNode fxAntNode = new FXAntNode(antNode);
-                fxAntNode.setOnMouseClicked((event1 -> {
+                FXAntNode fxAntNode1 = new FXAntNode(antNode);
+                fxAntNode1.setOnMouseClicked((event1 -> {
                     if(event1.getButton().equals(MouseButton.SECONDARY)) {
-                        g.removeNode(fxAntNode.getAntNodeId(), ants);
-                        root.getChildren().remove(fxAntNode);
+                        g.removeNode(fxAntNode1.getAntNodeId(), ants);
+                        root.getChildren().remove(fxAntNode1);
                     }
                 }));
                 g.addNode(antNode, ants);
@@ -74,20 +73,21 @@ public class AntGUI extends Application {
                 Set<Line> temp = new HashSet();
                 for(Node n1: root.getChildren()) {
                     if(n1 instanceof FXAntNode) {
-                        FXAntNode fxAntNode1 = (FXAntNode) n1;
-                        Line line = new Line(fxAntNode.getCenterX(), fxAntNode.getCenterY(),fxAntNode1.getCenterX(), fxAntNode1.getCenterY());
+                        FXAntNode fxAntNode2 = (FXAntNode) n1;
+                        Edge edge = new Edge(fxAntNode1.getAntNodeId(), fxAntNode2.getAntNodeId());
+                        FXAntLine line = new FXAntLine(fxAntNode1.getCenterX(), fxAntNode1.getCenterY(),fxAntNode2.getCenterX(), fxAntNode2.getCenterY(), edge);
                         line.setVisible(false);
-                        edgeLineMap.put(new Edge(fxAntNode.getAntNodeId(), fxAntNode1.getAntNodeId()), line);
+                        edgeLineMap.put(new Edge(fxAntNode1.getAntNodeId(), fxAntNode2.getAntNodeId()), line);
                         temp.add(line);
                     }
                 }
-                root.getChildren().add(fxAntNode);
+                root.getChildren().add(fxAntNode1);
                 root.getChildren().addAll(temp);
                 label.setText("Total City: " + 4);
             }
         });
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1), new EventHandler<ActionEvent>() {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5), new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 List<Integer> path = blockingQueue.poll();
@@ -98,7 +98,7 @@ public class AntGUI extends Application {
                         e.printStackTrace();
                     }
                 } else {
-                    System.out.println(path.size());
+                    System.out.println("D: " + g.calculateDistanceFromPath(path));
                     /*Map<Edge, EdgeInfo> pathInfo = g.getPathInfo(path);
                     pathInfo.keySet().stream().forEach((k) -> {
                         edgeLineMap.get(k).setVisible(true);

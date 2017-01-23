@@ -194,18 +194,15 @@ public abstract class Ant implements Runnable {
     public void run() {
         running = true;
         int i = 0;
-        while (i < MAX_ITER){
+        while (true){
             buildPath();
-            boolean success = blockingQueue.offer(bestGlobalPath);
-            while (!success) {
-                try {
-                    Thread.sleep(1);
-                    success = blockingQueue.offer(bestGlobalPath);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            synchronized (blockingQueue) {
+                List<Integer> oldPath = blockingQueue.poll();
+                if (oldPath == null || g.calculateDistanceFromPath(oldPath) > g.calculateDistanceFromPath(bestGlobalPath)) {
+                    oldPath = bestGlobalPath;
                 }
+                blockingQueue.offer(oldPath);
             }
-            i++;
         }
     }
 

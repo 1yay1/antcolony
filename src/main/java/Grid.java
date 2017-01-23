@@ -10,6 +10,7 @@ public class Grid {
     private final ConcurrentHashMap<Edge, EdgeInfo> synchronizedEdgePheromoneMap;
     private final ConcurrentHashMap<Integer, AntNode> synchronizedIntegerNodeMap;
     private volatile boolean updating;
+    private volatile List<Integer> globalBestPath;
 
 
     public Grid(File f) {
@@ -21,6 +22,14 @@ public class Grid {
         synchronizedEdgePheromoneMap = new ConcurrentHashMap();
         calculateEdgeInfos();
         updating = false;
+    }
+
+    public synchronized void setGlobalBestPath(List<Integer> globalBestPath) {
+        this.globalBestPath = globalBestPath;
+    }
+
+    public List<Integer> getGlobalBestPath() {
+        return globalBestPath;
     }
 
     public int nodeCount() {
@@ -123,9 +132,15 @@ public class Grid {
         this.addEdgeInfo(e, edgeInfo);
     }
 
-    protected void decayAll(double beta) {
+    protected void decayAll(double decayRate) {
         for (EdgeInfo edgeInfo : synchronizedEdgePheromoneMap.values()) {
-            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - beta));
+            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - decayRate));
+        }
+    }
+
+    protected void decay(List<Integer> path, double decayRate) {
+        for(EdgeInfo edgeInfo: getPathInfo(path).values()) {
+            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - decayRate));
         }
     }
 

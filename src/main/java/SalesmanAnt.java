@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * Created by yay on 21.12.2016.
  */
 public class SalesmanAnt extends Ant {
-    private double q0, alpha, beta, decayRate;
+    protected double q0, alpha, beta, decayRate;
 
     public SalesmanAnt(Grid g, BlockingQueue blockingQueue,int ants, int tourNumber, double q0, double alpha, double beta, double decayRate) {
         super(g, blockingQueue, ants, tourNumber);
@@ -83,10 +83,7 @@ public class SalesmanAnt extends Ant {
         producePheromone(bestGlobalPath);
     }
 
-    protected void removePheromoneOnLastEdge(double epsilon, double t0) {
-        EdgeInfo edgeInfo = g.getEdgeInfo(new Edge(path.get(path.size()-1), path.get(path.size()-2)));
-        edgeInfo.setPheromone((1-epsilon) * edgeInfo.getPheromoneValue() + epsilon * t0);
-    }
+
 
     /*
         remove weightededge class, distance and pheromone is saved in edgeinfo fix roulette select.
