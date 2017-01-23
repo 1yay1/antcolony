@@ -56,8 +56,8 @@ public class SalesmanAntACO extends SalesmanAnt {
             allPathes.add(bestPath);
         }
         g.decay(bestGlobalPath, decayRate);
-
         producePheromone(bestGlobalPath);
+        //g.setGlobalBestPath(bestGlobalPath);
     }
 
 

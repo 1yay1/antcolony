@@ -35,8 +35,14 @@ public class AntGUI extends Application {
         Label label = new Label();
         label.setAlignment(Pos.CENTER);
         label.setPadding(new Insets(0, 100, 15, 100));
+        label.setText("Citycount: 0");
+        Label helpLabel = new Label();
+        helpLabel.setAlignment(Pos.CENTER);
+        label.setPadding(new Insets(0,100, 15, 200));
+        helpLabel.setText("Mouse 1: Add node\nMouse 2: Remove node\nEnter: Start\nEsc: Exit");
         mainRoot.setCenter(root);
         mainRoot.setBottom(label);
+        mainRoot.setRight(helpLabel);
 
         final Grid g = new Grid(new HashMap<>());
 
@@ -55,6 +61,7 @@ public class AntGUI extends Application {
         final List<Thread> antColonyThreads = new ArrayList<>();
 
         final Map<Edge, FXAntLine> edgeLineMap = new HashMap<>();
+
 
         scene.setOnMouseClicked(event -> {
             if (event.getButton().equals(MouseButton.PRIMARY)) {
@@ -83,14 +90,14 @@ public class AntGUI extends Application {
                 }
                 root.getChildren().add(fxAntNode1);
                 root.getChildren().addAll(temp);
-                label.setText("Total City: " + 4);
+                label.setText("Citycount: " + g.nodeCount());
             }
         });
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(5), new EventHandler<ActionEvent>() {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                List<Integer> path = blockingQueue.poll();
+                List<Integer> path = blockingQueue.peek();
                 if(path == null) {
                     try {
                         Thread.sleep(5);
@@ -98,7 +105,16 @@ public class AntGUI extends Application {
                         e.printStackTrace();
                     }
                 } else {
-                    System.out.println("D: " + g.calculateDistanceFromPath(path));
+                    if(g.getNodeKeySet().containsAll(path)) {
+                        System.out.println("D: " + g.calculateDistanceFromPath(path));
+                        Set<Edge> pathEdges = g.getPathInfo(path).keySet();
+                        root.getChildren().forEach(node -> {
+                            if (node instanceof FXAntLine) {
+                                node.setVisible(pathEdges.contains(((FXAntLine) node).getEdge()));
+                            }
+                        });
+
+                    }
                     /*Map<Edge, EdgeInfo> pathInfo = g.getPathInfo(path);
                     pathInfo.keySet().stream().forEach((k) -> {
                         edgeLineMap.get(k).setVisible(true);
@@ -123,6 +139,9 @@ public class AntGUI extends Application {
                     e.printStackTrace();
                 }
                 timeline.play();
+            }
+            if(event.getCode().equals(KeyCode.ESCAPE)) {
+                System.exit(0);
             }
         });
 
