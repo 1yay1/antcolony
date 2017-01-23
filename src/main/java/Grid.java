@@ -38,13 +38,14 @@ public class Grid {
 
     private void calculateEdgeInfos() {
         ArrayList<Integer> nodes = synchronizedIntegerNodeMap.keySet().stream().sorted().collect(Collectors.toCollection(ArrayList::new));
-        for(int i = 0; i < nodes.size(); i++) {
-            for(int j = i+1; j < nodes.size(); j++) {
-                Edge e = new Edge(nodes.get(i),nodes.get(j));
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Edge e = new Edge(nodes.get(i), nodes.get(j));
                 initializeEdgeInfo(e);
             }
         }
     }
+
     /**
      * Loads a file as the city grid.
      *
@@ -123,8 +124,8 @@ public class Grid {
     }
 
     protected void decayAll(double beta) {
-        for(EdgeInfo edgeInfo: synchronizedEdgePheromoneMap.values()) {
-            edgeInfo.setPheromone( edgeInfo.getPheromoneValue() * (1 - beta));
+        for (EdgeInfo edgeInfo : synchronizedEdgePheromoneMap.values()) {
+            edgeInfo.setPheromone(edgeInfo.getPheromoneValue() * (1 - beta));
         }
     }
 
@@ -160,7 +161,7 @@ public class Grid {
         System.out.print("UPDATING..");
         updating = true;
         for (Ant a : ants) {
-            while(!a.isPaused()) {
+            while (!a.isPaused()) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -168,6 +169,7 @@ public class Grid {
                 }
             }
         }
+        synchronizedIntegerNodeMap.forEach((k, v) -> addEdgeInfo(new Edge(k, n.getId()), new EdgeInfo(v, n)));
         synchronizedIntegerNodeMap.put(n.getId(), n);
         updating = false;
         System.out.print("UPDATED!..");
@@ -184,7 +186,7 @@ public class Grid {
         System.out.print("UPDATING..");
         updating = true;
         for (Ant a : ants) {
-            while(!a.isPaused()) {
+            while (!a.isPaused()) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -212,13 +214,34 @@ public class Grid {
 
     public String getNodesAsString() {
         StringBuilder sb = new StringBuilder();
-        this.synchronizedIntegerNodeMap.forEach((v,k) -> {
+        this.synchronizedIntegerNodeMap.forEach((v, k) -> {
             sb.append(v.toString());
             sb.append((" : "));
             sb.append(k.toString());
             sb.append("\n");
         });
         return sb.toString();
+    }
+
+    protected Map<Edge, EdgeInfo> getPathInfo(List<Integer> path) {
+        Set<Edge> edges = new HashSet<>();
+        //System.out.println(Arrays.toString(path.toArray()));
+        for (int i = 0; i < path.size() - 1; i++) {
+            edges.add(new Edge(path.get(i), path.get(i + 1)));
+        }
+        edges.add(new Edge(path.get(0), path.get(path.size() - 1)));
+        Map<Edge, EdgeInfo> edgeEdgeInfoMap = new HashMap<>();
+        for (Edge e : edges) {
+            edgeEdgeInfoMap.put(e, this.getEdgeInfo(e));
+        }
+        return edgeEdgeInfoMap;
+    }
+
+    protected Double calculateDistanceFromPath(List<Integer> path) {
+        Map<Edge, EdgeInfo> map = getPathInfo(path);
+        return map.values().stream()
+                .mapToDouble((v) -> v.getDistance())
+                .sum();
     }
 
     public boolean isUpdating() {

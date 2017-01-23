@@ -18,20 +18,37 @@ public class AntColony {
         double q0, alpha, beta, decayRate;
         double step = 0.1;
 
-        q0 = 0.1;
-        alpha = 5;
-        beta = 10;
-        decayRate = 0.08;
+        int antCount = 25;
+        int tours = 20;
+        q0 = 0.25;
+        alpha = 1;
+        beta = 2;
+        decayRate = 0.2;
 
         final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1000);
-        Ant a = new SalesmanAnt(g, blockingQueue, 100, q0, alpha, beta, decayRate);
-
+        Ant aMeise = new SalesmanAnt(g, blockingQueue, antCount, tours , q0, alpha, beta, decayRate);
+        Ant bMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
+        Ant cMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
+        Thread aThread = new Thread(aMeise);
+        Thread bThread = new Thread(bMeise);
+        Thread cThread = new Thread(cMeise);
+        aThread.start();
+        bThread.start();
+        cThread.start();
         System.out.print("Paras: q0: " + q0 + " alpha: " + alpha + " beta: " + beta + " t0: " + decayRate + "\n");
-        for (int i = 0; i < 1000; i++) {
-            a.buildPath();
-            System.out.println("[" + i + "] " +" distance: " + a.calculateDistanceFromPath(a.getBestGlobalPath()));
+
+        while (true) {
+            List<Integer> path = blockingQueue.poll();
+            if(path == null) {
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+            System.out.println("D: " + g.calculateDistanceFromPath(path));
         }
-        System.out.println("\ti: " + 2000 + " " + Arrays.toString(a.getBestGlobalPath().toArray()) + " D : " + a.calculateDistanceFromPath(a.getPath()));
 
         //System.out.println("\t" + Arrays.toString(a.getPath().toArray()) +" D : " + a.calculateDistanceFromPath(a.getPath()));
 

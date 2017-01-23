@@ -6,7 +6,7 @@
  * Static method provided to calculate the distance between two nodes.
  */
 public class AntNode {
-    private static int idCounter = 0;
+    private static int idCounter = 1;
     private final int id;
     int x;
     int y;

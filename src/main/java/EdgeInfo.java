@@ -17,8 +17,8 @@ public class EdgeInfo implements Comparable<EdgeInfo> {
     }
 
     
-    public void calculateWeightedValue(double beta) {
-        this.weightedValue = Math.pow((1/distance), beta) * pheromone.getValue();
+    public void calculateWeightedValue(double alpha, double beta) {
+        this.weightedValue = Math.pow((pheromone.getValue()), alpha) * Math.pow((1/distance), beta);
     }
 
     public EdgeInfo(AntNode n1, AntNode n2) {

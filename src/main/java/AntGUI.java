@@ -1,8 +1,13 @@
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -10,6 +15,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.Path;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,9 +38,24 @@ public class AntGUI extends Application {
         mainRoot.setCenter(root);
         mainRoot.setBottom(label);
 
-        final Grid g = new Grid(new HashMap());
-        final List<Ant> ants = new ArrayList<>();
+        final Grid g = new Grid(new HashMap<>());
+
         final Scene scene = new Scene(mainRoot, 600, 600);
+
+
+        int antCount = 25;
+        int tours = 20;
+        double q0 = 0.25;
+        double alpha = 1;
+        double beta = 2;
+        double decayRate = 0.2;
+
+        final List<Ant> ants = new ArrayList<>();
+        final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1000);
+        final List<Thread> antColonyThreads = new ArrayList<>();
+
+
+        final Map<Edge, Line> edgeLineMap = new HashMap<>();
 
         scene.setOnMouseClicked(event -> {
             if (event.getButton().equals(MouseButton.PRIMARY)) {
@@ -53,8 +74,11 @@ public class AntGUI extends Application {
                 Set<Line> temp = new HashSet();
                 for(Node n1: root.getChildren()) {
                     if(n1 instanceof FXAntNode) {
-                        Line l = new Line(fxAntNode.getCenterX(), fxAntNode.getCenterY(), ((FXAntNode) n1).getCenterX(), ((FXAntNode) n1).getCenterY());
-                        temp.add(l);
+                        FXAntNode fxAntNode1 = (FXAntNode) n1;
+                        Line line = new Line(fxAntNode.getCenterX(), fxAntNode.getCenterY(),fxAntNode1.getCenterX(), fxAntNode1.getCenterY());
+                        line.setVisible(false);
+                        edgeLineMap.put(new Edge(fxAntNode.getAntNodeId(), fxAntNode1.getAntNodeId()), line);
+                        temp.add(line);
                     }
                 }
                 root.getChildren().add(fxAntNode);
@@ -62,6 +86,48 @@ public class AntGUI extends Application {
                 label.setText("Total City: " + 4);
             }
         });
+
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1), new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                List<Integer> path = blockingQueue.poll();
+                if(path == null) {
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.out.println(path.size());
+                    /*Map<Edge, EdgeInfo> pathInfo = g.getPathInfo(path);
+                    pathInfo.keySet().stream().forEach((k) -> {
+                        edgeLineMap.get(k).setVisible(true);
+                    });*/
+
+                }
+                //System.out.println("D: " + g.calculateDistanceFromPath(path));
+            }
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+
+        scene.setOnKeyPressed(event -> {
+            if(event.getCode().equals(KeyCode.ENTER)) {
+                for(int i = 0; i < 1; i++) {
+                    ants.add(new SalesmanAnt(g, blockingQueue, antCount, tours , q0, alpha, beta, decayRate));
+                    antColonyThreads.add(new Thread(ants.get(i)));
+                }
+                antColonyThreads.forEach((t) -> t.start());
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                timeline.play();
+            }
+        });
+
+
+
 
         stage.setTitle("TSP Genetic");
         stage.setScene(scene);

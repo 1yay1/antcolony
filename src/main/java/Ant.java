@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
  * Created by yay on 20.12.2016.
  */
 public abstract class Ant implements Runnable {
+    private static final int MAX_ITER = 200;
     protected List<Integer> path;
     protected final Grid g;
     protected volatile boolean reset;
@@ -15,6 +16,7 @@ public abstract class Ant implements Runnable {
     protected volatile boolean pause;
     protected BlockingQueue<List<Integer>> blockingQueue;
     protected final int tourNumber;
+    protected final int ants;
     protected double bestDistance;
     protected List<Integer> bestGlobalPath;
 
@@ -24,10 +26,11 @@ public abstract class Ant implements Runnable {
         return path;
     }
 
-    public Ant(Grid g, BlockingQueue blockingQueue, int tourNumber) {
+    public Ant(Grid g, BlockingQueue blockingQueue,int ants, int tourNumber) {
         this.g = g;
         this.blockingQueue = blockingQueue;
         this.tourNumber = tourNumber;
+        this.ants = ants;
         bestDistance = Double.MAX_VALUE;
         bestGlobalPath = null;
         init();
@@ -81,8 +84,6 @@ public abstract class Ant implements Runnable {
      * @return
      */
     protected Map<Edge, EdgeInfo> getPossibleNextEdgeInfoMap() {
-        //final Integer lastNode = path.get(path.size() - 1);
-
         return g.getNodeKeySet().stream()
                 .filter((k) -> !path.contains(k))
                 .map((k) -> new Edge(k, path.get(path.size()-1)))
@@ -158,12 +159,12 @@ public abstract class Ant implements Runnable {
         System.out.print(Arrays.toString(bestPath.toArray()));*/
 
 
-    protected Double calculateDistanceFromPath(List<Integer> path) {
-        Map<Edge, EdgeInfo> map = getPathInfo(path);
+/*    protected Double calculateDistanceFromPath(List<Integer> path) {
+        Map<Edge, EdgeInfo> map = g.getPathInfo(path);
         return map.values().stream()
                 .mapToDouble((v) -> v.getDistance())
                 .sum();
-    }
+    }*/
 
     /**
      * Sets the volatile reset flag
@@ -192,17 +193,19 @@ public abstract class Ant implements Runnable {
     @Override
     public void run() {
         running = true;
-        while (running) {
+        int i = 0;
+        while (i < MAX_ITER){
             buildPath();
-            boolean success = blockingQueue.offer(path);
+            boolean success = blockingQueue.offer(bestGlobalPath);
             while (!success) {
                 try {
                     Thread.sleep(1);
-                    success = blockingQueue.offer(path);
+                    success = blockingQueue.offer(bestGlobalPath);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+            i++;
         }
     }
 
