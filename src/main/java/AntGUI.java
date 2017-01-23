@@ -38,7 +38,7 @@ public class AntGUI extends Application {
         label.setText("Citycount: 0");
         Label helpLabel = new Label();
         helpLabel.setAlignment(Pos.CENTER);
-        label.setPadding(new Insets(0,100, 15, 200));
+        helpLabel.setPadding(new Insets(0,10, 15, 200));
         helpLabel.setText("Mouse 1: Add node\nMouse 2: Remove node\nEnter: Start\nEsc: Exit");
         mainRoot.setCenter(root);
         mainRoot.setBottom(label);
