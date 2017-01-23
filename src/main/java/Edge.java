@@ -1,4 +1,5 @@
 
+import java.awt.geom.Point2D;
 import java.util.HashSet;
 
 
@@ -7,48 +8,62 @@ import java.util.HashSet;
  * Works the same as a HashSet with two values, but the hashCode, toString and equals methods depending on the two values.
  */
 
-public class Edge extends HashSet<Integer> {
-
+public class Edge  {
+    final Integer[] arr;
     Edge(Integer a, Integer b) {
-        super(2);
-        this.add(a);
-        this.add(b);
+        arr = new Integer[2];
+        if(a > b) {
+            arr[0] = a;
+            arr[1] = b;
+        } else {
+            arr[1] = a;
+            arr[0] = b;
+        }
 
     }
 
-    public Integer[] getAsArray() {
-        return this.toArray(new Integer[this.size()]);
+    public Integer getA() {
+        return arr[0];
     }
 
-    @Override
+    public Integer getB() {
+        return arr[1];
+    }
+
+    public Integer[] getArr() {
+        return arr;
+    }
+
+    /*@Override
     public int hashCode() {
         return toString().hashCode();
+    }*/
+
+    /**
+     * Same Implementation as Point2D hashCode.
+     * @return hashCode
+     */
+    @Override
+    public int hashCode() {
+        long bits = java.lang.Double.doubleToLongBits(getA());
+        bits ^= java.lang.Double.doubleToLongBits(getB()) * 31;
+        return (((int) bits) ^ ((int) (bits >> 32)));
     }
+
 
     @Override
     public String toString() {
-        Integer[] nodes = this.toArray(new Integer[this.size()]);
-        Integer a = nodes[0];
-        Integer b = nodes[1];
-        return a < b ? "(" + Integer.toString(a) + ", " + Integer.toString(b) + ")" : "(" + Integer.toString(b) + ", " + Integer.toString(a) + ")";
+        Integer a = arr[0];
+        Integer b = arr[1];
+        return "["+a.toString()+":"+b.toString()+"]";
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Edge)) return false;
-
         Edge e = (Edge) o;
-        Integer[] nodes1 = this.toArray(new Integer[this.size()]);
-        Integer a1 = nodes1[0];
-        Integer b1 = nodes1[1];
-        Integer[] nodes2 = e.toArray(new Integer[this.size()]);
-        Integer a2 = nodes2[0];
-        Integer b2 = nodes2[1];
-
-        if (a1 == a2 && b1 == b2) return true;
-
-        if (b1 == a2 && a1 == b2) return true;
-
+        if (getA() == e.getA() && getB() == e.getB()) return true;
+        if (getB() == e.getA() && getA() == e.getB()) return true;
         return false;
     }
 }

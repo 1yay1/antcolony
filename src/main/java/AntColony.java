@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class AntColony {
     public static void main(String[] args) {
-        File f = new File("06-map-100x100-50.txt");
+        File f = new File("06-map-100x100-200.txt");
         final Grid g = new Grid(f);
 
         double q0, alpha, beta, decayRate;
@@ -25,29 +25,28 @@ public class AntColony {
         beta = 2;
         decayRate = 0.2;
 
-        final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1000);
+        final BlockingQueue<List<Integer>> blockingQueue = new ArrayBlockingQueue(1);
         Ant aMeise = new SalesmanAnt(g, blockingQueue, antCount, tours , q0, alpha, beta, decayRate);
-        Ant bMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
-        Ant cMeise = new SalesmanAnt(g, blockingQueue, antCount, tours, q0, alpha, beta, decayRate);
         Thread aThread = new Thread(aMeise);
-        Thread bThread = new Thread(bMeise);
-        Thread cThread = new Thread(cMeise);
         aThread.start();
-        bThread.start();
-        cThread.start();
         System.out.print("Paras: q0: " + q0 + " alpha: " + alpha + " beta: " + beta + " t0: " + decayRate + "\n");
 
         while (true) {
-            List<Integer> path = blockingQueue.poll();
+            List<Integer> path = blockingQueue.peek();
             if(path == null) {
                 try {
                     Thread.sleep(5);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                continue;
+            } else {
+                System.out.println("D: " + g.calculateDistanceFromPath(path));
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            System.out.println("D: " + g.calculateDistanceFromPath(path));
         }
 
         //System.out.println("\t" + Arrays.toString(a.getPath().toArray()) +" D : " + a.calculateDistanceFromPath(a.getPath()));

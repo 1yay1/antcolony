@@ -123,7 +123,7 @@ public class Grid {
         EdgeInfo edgeInfo = this.getEdgeInfo(e);
         synchronized (this) {
             if (edgeInfo == null) {
-                Integer[] edgeIntegers = e.getAsArray();
+                Integer[] edgeIntegers = e.getArr();
                 edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
                 this.addEdgeInfo(e, edgeInfo);
             }
@@ -132,7 +132,7 @@ public class Grid {
     }*/
 
     private void initializeEdgeInfo(Edge e) {
-        Integer[] edgeIntegers = e.getAsArray();
+        Integer[] edgeIntegers = e.getArr();
         EdgeInfo edgeInfo = new EdgeInfo(this.getNode(edgeIntegers[0]), this.getNode(edgeIntegers[1]));
         this.addEdgeInfo(e, edgeInfo);
     }
@@ -223,7 +223,7 @@ public class Grid {
         synchronized (this) {
             synchronizedIntegerNodeMap.remove(id);
             for (Edge e : synchronizedEdgePheromoneMap.keySet()) {
-                for (Integer i : e) {
+                for (Integer i : e.getArr()) {
                     if (i == id) {
                         synchronizedEdgePheromoneMap.remove(e);
                         break;
